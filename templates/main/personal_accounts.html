@@ -1,0 +1,668 @@
+{% extends "base.html" %}
+
+{% block title %}Личные кабинеты{% endblock %}
+
+{% block style %}
+<style>
+:root {
+    --primary-blue: #000f9f;
+    --primary-blue-light: rgba(0, 15, 159, 0.1);
+    --primary-blue-dark: #000c7a;
+    --primary-green: #00a86b;
+    --primary-green-light: rgba(0, 168, 107, 0.1);
+    --primary-green-dark: #008956;
+    --primary-purple: #6a0dad;
+    --primary-purple-light: rgba(106, 13, 173, 0.1);
+    --primary-purple-dark: #560b8c;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+}
+
+body {
+    margin-top: 100px;
+}
+
+.container {
+    width: 1200px;
+    margin: 0 auto;
+}
+
+/* Шапка страницы */
+.page-header {
+    margin-bottom: 30px;
+    padding-top: 2rem;
+}
+
+.page-title {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+    color: var(--text-light);
+    font-size: 1.125rem;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Сетка карточек */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 5rem;
+}
+
+/* Общие стили карточек */
+.account-card {
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.account-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+
+.account-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--card-color), var(--card-color-dark));
+    z-index: 2;
+}
+
+/* Карточка 1: Для всех инвесторов */
+.card-investors {
+    --card-color: var(--primary-blue);
+    --card-color-light: var(--primary-blue-light);
+    --card-color-dark: var(--primary-blue-dark);
+    grid-column: 1;
+}
+
+/* Контент первой карточки */
+.card-investors .card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Карточки 2 и 3: на следующей строке в ряд */
+.bottom-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+/* Карточка 2: Для пайщиков частных фондов */
+.card-shareholders {
+    --card-color: var(--primary-green);
+    --card-color-light: var(--primary-green-light);
+    --card-color-dark: var(--primary-green-dark);
+    animation-delay: 0.1s;
+    height: 100%;
+}
+
+/* Карточка 3: Электронное голосование */
+.card-voting {
+    --card-color: var(--primary-purple);
+    --card-color-light: var(--primary-purple-light);
+    --card-color-dark: var(--primary-purple-dark);
+    animation-delay: 0.2s;
+    height: 100%;
+}
+
+/* Контент карточек */
+.card-content {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* Иконки */
+.card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    background: var(--card-color-light);
+    color: var(--card-color);
+}
+
+.card-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* Заголовки карточек */
+.card-title {
+    line-height: 1.3;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+}
+
+.card-description {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    flex-grow: 1;
+}
+
+/* ОБНОВЛЕННЫЙ Контейнер для фондов - ПРИЖАТ К ЛЕВОМУ КРАЮ */
+.funds-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    min-height: auto;
+    justify-content: flex-start; /* Прижимаем к левому краю */
+    gap: 0.5rem; /* ФИКСИРОВАННЫЙ gap */
+    padding: 0; /* Убираем отступы */
+}
+
+/* ОБНОВЛЕННЫЙ Стиль для иконки фонда */
+.fund-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрируем по горизонтали внутри элемента */
+    width: 60px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.5s ease forwards;
+    transition: all 0.3s ease;
+    margin: 0; /* Убираем отрицательный margin */
+    text-align: center; /* Центрируем текст */
+}
+
+.fund-item:hover {
+    transform: translateY(-5px);
+    z-index: 2;
+}
+
+.fund-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: white;
+    border: 2px solid var(--primary-blue-light);
+    padding: 4px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center; /* Центрируем по вертикали */
+    justify-content: center; /* Центрируем по горизонтали */
+}
+
+.fund-item:hover .fund-icon {
+    transform: scale(1.2);
+    box-shadow: var(--shadow-md);
+}
+
+.fund-name {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 60px;
+    word-break: break-word;
+    min-height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.25rem; /* Небольшой отступ сверху */
+}
+
+/* Кнопки входа */
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 10px;
+    background: var(--card-color);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    width: 200px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.login-button:hover {
+    background: var(--card-color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-button svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.login-button:hover svg {
+    transform: translateX(5px);
+}
+
+/* Декоративные элементы */
+.card-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.03;
+}
+
+.decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--card-color);
+}
+
+/* Круги для всех карточек - СТАНДАРТНЫЕ ПОЗИЦИИ */
+.circle-1 {
+    width: 200px;
+    height: 200px;
+    top: -100px;
+    right: -100px;
+}
+
+.circle-2 {
+    width: 150px;
+    height: 150px;
+    bottom: -75px;
+    left: -75px;
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .fund-item {
+        width: 55px;
+    }
+    
+    .fund-icon {
+        width: 35px;
+        height: 35px;
+        padding: 3px;
+    }
+    
+    .fund-name {
+        font-size: 8px;
+        max-width: 55px;
+        min-height: 20px;
+    }
+    
+    .funds-container {
+        gap: 0.5rem; /* Сохраняем фиксированный gap */
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        margin-top: 120px;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1rem;
+    }
+    
+    .bottom-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .card-content {
+        padding: 2rem;
+    }
+    
+    .card-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .card-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .fund-item {
+        width: 50px;
+    }
+    
+    .fund-icon {
+        width: 30px;
+        height: 30px;
+        padding: 2px;
+    }
+    
+    .fund-name {
+        font-size: 7px;
+        max-width: 50px;
+        min-height: 18px;
+    }
+    
+    .funds-container {
+        gap: 0.5rem; /* Сохраняем фиксированный gap */
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.75rem;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .login-button {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9375rem;
+        width: 100%;
+    }
+    
+    .circle-1 {
+        width: 140px;
+        height: 140px;
+        top: -20px;
+        right: -20px;
+    }
+    
+    .circle-2 {
+        width: 100px;
+        height: 100px;
+        bottom: -50px;
+        left: -50px;
+    }
+    
+    .fund-item {
+        width: 45px;
+    }
+    
+    .fund-icon {
+        width: 25px;
+        height: 25px;
+        padding: 2px;
+        border-width: 1px;
+    }
+    
+    .fund-name {
+        font-size: 6px;
+        max-width: 45px;
+        min-height: 16px;
+    }
+    
+    .funds-container {
+        gap: 0.5rem; /* Сохраняем фиксированный gap */
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li>Личные кабинеты</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <!-- Шапка страницы -->
+    <div class="page-header">
+        <h1 class="header5">Цифровые сервисы для инвесторов</h1>
+        <p class="description">Управляйте инвестициями онлайн в УК «Рекорд Капитал»</p>
+    </div>
+
+    <!-- Сетка карточек -->
+    <div class="cards-grid">
+        <!-- Карточка 1: Для всех инвесторов - ПОЛНАЯ ШИРИНА -->
+        <div class="account-card card-investors">
+            <div class="card-decoration">
+                <div class="decoration-circle circle-1"></div>
+                <div class="decoration-circle circle-2"></div>
+            </div>
+            
+            <div class="card-content">
+                <div class="card-icon">
+                    <svg fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                    </svg>
+                </div>
+                
+                <h2 class="card-title">Личный кабинет для всех инвесторов</h2>
+                
+                <p class="card-description">
+                    Персональный онлайн-доступ к приобретению и погашению паев фондов под управлением УК «Рекорд Капитал». Простая регистрация, удобный интерфейс и полный контроль над вашими вложениями в режиме 24/7
+                </p>
+                
+                <!-- Контейнер с фондами - ОБНОВЛЕННЫЙ -->
+                {% if funds %}
+                <div class="funds-container">
+                    {% for fund in funds %}
+                    <div class="fund-item" style="animation-delay: {{ loop.index * 0.03 }}s">
+                        {% if fund.logo %}
+                        <img src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo | b64encode }}" 
+                             alt="{{ fund.name }}" 
+                             class="fund-icon"
+                             title="{{ fund.name }}">
+                        {% else %}
+                        <div class="fund-icon" style="background: var(--primary-blue-light); color: var(--primary-blue);">
+                            <svg fill="currentColor" viewBox="0 0 16 16" style="width: 18px; height: 18px;">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <span class="fund-name">{{ fund.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <a href="https://lk.recordcap.ru/users/sign_in" target="_blank" class="login-button">
+                    Войти в кабинет
+                    <svg fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Карточки 2 и 3 на следующей строке -->
+        <div class="bottom-cards">
+            <!-- Карточка 2: Для пайщиков частных фондов -->
+            <div class="account-card card-shareholders">
+                <div class="card-decoration">
+                    <div class="decoration-circle circle-1"></div>
+                    <div class="decoration-circle circle-2"></div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="card-icon">
+                        <svg fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                        </svg>
+                    </div>
+                    
+                    <h2 class="card-title">Личный кабинет для пайщиков частных фондов</h2>
+                    
+                    <p class="card-description">
+                        Закрытый сервис для пайщиков частных фондов под управлением УК «Рекорд Капитал». Здесь вы можете увидеть структуру и стоимость вашего портфеля, детальную структуру активов фонда и ключевую отчетность. Для получения доступа обратитесь к персональному менеджеру в УК «Рекорд Капитал»
+                    </p>
+                    
+                    <a href="https://recordcap.ru/login" target="_blank" class="login-button">
+                        Войти
+                        <svg fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Карточка 3: Электронное голосование -->
+            <div class="account-card card-voting">
+                <div class="card-decoration">
+                    <div class="decoration-circle circle-1"></div>
+                    <div class="decoration-circle circle-2"></div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="card-icon">
+                        <svg fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                        </svg>
+                    </div>
+                    
+                    <h2 class="card-title">Сервис Электронного голосования на инвестиционном комитете</h2>
+                    
+                    <p class="card-description">
+                        Современный и защищенный сервис на платформе «ВТБ Точная Цифра» для пайщиков ЗПИФ УК «Рекорд Капитал». Позволяет дистанционно участвовать в голосованиях на инвестиционном комитете, управляя операционной деятельностью фонда
+                    </p>
+                    
+                    <a href="https://isd.vtbsd.ru/index.htm" target="_blank" class="login-button">
+                        Перейти
+                        <svg fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация при наведении на карточки
+    const cards = document.querySelectorAll('.account-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const button = this.querySelector('.login-button');
+            if (button) {
+                button.style.transform = 'translateY(-2px)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const button = this.querySelector('.login-button');
+            if (button) {
+                button.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    // Плавное появление при скролле
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                
+                // Также анимируем иконки фондов внутри карточки
+                const fundItems = entry.target.querySelectorAll('.fund-item');
+                fundItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, index * 30);
+                });
+            }
+        });
+    }, { threshold: 0.05 });
+    
+    cards.forEach(card => observer.observe(card));
+    
+    // Анимация при наведении на иконки фондов
+    const fundItems = document.querySelectorAll('.fund-item');
+    fundItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('.fund-icon');
+            if (icon) {
+                icon.style.transform = 'scale(1.2)';
+                this.style.zIndex = '10';
+            }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('.fund-icon');
+            if (icon) {
+                icon.style.transform = 'scale(1)';
+                this.style.zIndex = '1';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

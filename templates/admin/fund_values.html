@@ -1,0 +1,494 @@
+{% extends "base_admin.html" %}
+
+{% block title %} Управление значениями для графика {% endblock %}
+
+{% block style %}
+<style>
+    .editable {
+        cursor: pointer;
+        position: relative;
+        min-width: 100px;
+    }
+
+    .editable:hover {
+        background-color: #f8f9fa;
+    }
+
+    .value-edit {
+        display: inline-block;
+    }
+
+    .edit-column {
+        width: 60px;
+    }
+
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .table-warning {
+        background-color: rgb(248, 249, 250) !important;
+    }
+    .edit {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+
+    }
+    .btn-outline {
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        width: 25px;
+    }
+    .btn-outline-form {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block main %} 
+<div class="container"> 
+    <div class="nav">
+        {% for fund in short_names %}
+            <a class="{% if fund.url_name == current_fund.url_name %}active{% endif %}" 
+                href="{{ url_for('admin.fund_admin', fund_name=fund.url_name) }}">
+                {{ fund.short_name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="nav">
+        <a class="{% if request.path.endswith('/fund-values') %}active{% endif %}"
+            href="{{ url_for('admin.handle_fund_values', fund_name=current_fund.url_name) }}">
+            Значения стоимости пая, бенчмарка и СЧА
+        </a>
+        <a class="{% if request.path.endswith('/fund-composition') %}active{% endif %}"
+            href="{{ url_for('admin.handle_fund_composition', fund_name=current_fund.url_name) }}">
+            Состав фонда
+        </a>
+        <a class="{% if request.path.endswith('/documents') %}active{% endif %}"
+            href="{{ url_for('admin.handle_documents', fund_name=current_fund.url_name) }}">
+            Документы
+        </a>
+    </div>
+
+    <!-- Форма для добавления данных -->
+    <div class="card">
+        <div class="card-header">Добавить данные о стоимости пая</div>
+        <div class="card-body">
+            <form method="POST" id="fundForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="share_price">Стоимость пая</label>
+                        <input type="text" id="share_price" name="share_price" 
+                            pattern="[0-9]+([,\.][0-9]*)?" required>
+                        <div class="invalid-feedback">Пожалуйста, введите число</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="benchmark">Бенчмарк</label>
+                        <input type="text" id="benchmark" name="benchmark"
+                            pattern="[0-9]+([,\.][0-9]*)?" required>
+                        <div class="invalid-feedback">Пожалуйста, введите число</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scha">СЧА</label>
+                        <input type="text" id="scha" name="scha"
+                            pattern="[0-9]+([,\.][0-9]*)?" required>
+                        <div class="invalid-feedback">Пожалуйста, введите число</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">Дата</label>
+                        <input type="date" id="date" name="date" required>
+                        <div class="invalid-feedback">Пожалуйста, укажите дату</div>
+                    </div>
+                </div>
+                
+                <button type="submit" name="add_fund" class="btn btn-primary">Добавить</button>
+                
+                {% if error %}
+                    <div class="alert alert-danger mt-3">{{ error }}</div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if fund_data %}
+    <div class="card">
+        <div class="card-header edit">
+            Стоимость пая
+            <button id="toggleEditMode" class="btn-edit">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Фильтр по диапазону дат -->
+            <div class="filter-container">
+                <div class="date-filters">
+                    <div class="form-group">
+                        <label for="date_from">Дата с</label>
+                        <input type="date" id="date_from" class="form-control" 
+                            list="available_dates" min="{{ available_dates[-1] }}" max="{{ available_dates[0] }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="date_to">Дата по</label>
+                        <input type="date" id="date_to" class="form-control" 
+                            list="available_dates" min="{{ available_dates[-1] }}" max="{{ available_dates[0] }}">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="apply_filter" class="btn btn-primary">Применить</button>
+                    <button id="reset_filter" class="btn btn-secondary">Сбросить</button>
+                </div>
+            </div>
+            
+            <datalist id="available_dates">
+                {% for date in available_dates %}
+                    <option value="{{ date }}">
+                {% endfor %}
+            </datalist>
+
+
+            <!-- Таблица с данными -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Дата</th>
+                            <th>Дата загрузки</th>
+                            <th>Стоимость пая</th>
+                            <th>Бенчмарк</th>
+                            <th>СЧА</th>
+                            <th class="edit-column" style="display: none; width: 80px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fund_values_table">
+                        {% for fund_value in fund_data %}
+                        <tr data-date="{{ fund_value.date.strftime('%Y-%m-%d') }}" data-id="{{ fund_value.id }}">
+                            <td>{{ fund_value.date.strftime('%d.%m.%Y') }}</td>
+                            <td>
+                                {% if fund_value.moscow_upload_date %}
+                                    {{ fund_value.moscow_upload_date.strftime('%d.%m.%Y %H:%M') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="editable" data-field="share_price">
+                                <span class="value-display">
+                                    {% if fund_value.share_price is not none %}
+                                        {{ "{:,.2f}".format(fund_value.share_price).replace(",", " ") }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                                <input type="text" class="value-edit form-control-sm" 
+                                    value="{{ fund_value.share_price if fund_value.share_price is not none else '' }}" 
+                                    style="display: none;"
+                                    pattern="[0-9]+([,\.][0-9]*)?" 
+                                    required>
+                            </td>
+                            <td class="editable" data-field="benchmark">
+                                <span class="value-display">
+                                    {% if fund_value.benchmark is not none %}
+                                        {{ "{:,.2f}".format(fund_value.benchmark).replace(",", " ") }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                                <input type="text" class="value-edit form-control-sm" 
+                                    value="{{ fund_value.benchmark if fund_value.benchmark is not none else '' }}" 
+                                    style="display: none;"
+                                    pattern="[0-9]+([,\.][0-9]*)?" 
+                                    required>
+                            </td>
+                            <td class="editable" data-field="scha">
+                                <span class="value-display">
+                                    {% if fund_value.scha is not none %}
+                                        {{ "{:,.2f}".format(fund_value.scha).replace(",", " ") }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                                <input type="text" class="value-edit form-control-sm" 
+                                    value="{{ fund_value.scha if fund_value.scha is not none else '' }}" 
+                                    style="display: none;"
+                                    pattern="[0-9]+([,\.][0-9]*)?" 
+                                    required>
+                            </td>
+                            <td class="edit-column" style="display: none;">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-success save-btn" style="display: none;" title="Сохранить">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-secondary cancel-btn" style="display: none;" title="Отменить">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button class="btn-outline edit-btn" title="Редактировать">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <form method="POST" class="btn-outline-form" action="{{ url_for('admin.delete_fund_value_row') }}" class="d-inline">
+                                        <input type="hidden" name="fund_value_id" value="{{ fund_value.id }}">
+                                        <button type="submit" class="btn-outline" title="Удалить"
+                                            onclick="return confirm('Удалить данные за {{ fund_value.date.strftime('%d.%m.%Y') }}?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let editMode = false;
+        let currentEditRow = null;
+
+        // Переключение режима редактирования
+        document.getElementById('toggleEditMode').addEventListener('click', function() {
+            editMode = !editMode;
+            this.classList.toggle('btn-primary', editMode);
+            
+            // Показываем/скрываем колонку действий
+            document.querySelectorAll('.edit-column').forEach(col => {
+                col.style.display = editMode ? 'table-cell' : 'none';
+            });
+            
+            // Если выключаем режим редактирования, отменяем все правки
+            if (!editMode && currentEditRow) {
+                cancelEditing();
+            }
+        });
+
+        // Обработчики для кнопок
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-btn')) {
+                const btn = e.target.closest('.edit-btn');
+                const row = btn.closest('tr');
+                startEditing(row);
+            }
+            
+            if (e.target.closest('.save-btn')) {
+                const btn = e.target.closest('.save-btn');
+                const row = btn.closest('tr');
+                saveChanges(row);
+            }
+            
+            if (e.target.closest('.cancel-btn')) {
+                cancelEditing();
+            }
+        });
+
+        function startEditing(row) {
+            if (currentEditRow) {
+                cancelEditing();
+            }
+
+            currentEditRow = row;
+
+            // Переключаем в режим редактирования
+            row.classList.add('table-warning');
+            row.querySelectorAll('.value-display').forEach(span => span.style.display = 'none');
+            row.querySelectorAll('.value-edit').forEach(input => {
+                input.style.display = 'inline-block';
+            }); 
+            row.querySelector('.edit-btn').style.display = 'none';
+            row.querySelector('.save-btn').style.display = 'inline-block';
+            row.querySelector('.cancel-btn').style.display = 'inline-block';
+            row.querySelector('.btn-outline-form').style.display = 'none'; 
+        }
+
+        function cancelEditing() {
+            if (!currentEditRow) return;
+
+            // Выходим из режима редактирования
+            currentEditRow.classList.remove('table-warning');
+            currentEditRow.querySelectorAll('.value-display').forEach(span => span.style.display = 'inline');
+            currentEditRow.querySelectorAll('.value-edit').forEach(input => input.style.display = 'none');
+            currentEditRow.querySelector('.edit-btn').style.display = 'inline-block';
+            currentEditRow.querySelector('.save-btn').style.display = 'none';
+            currentEditRow.querySelector('.cancel-btn').style.display = 'none';
+             currentEditRow.querySelector('.btn-outline-form').style.display = 'inline-block'; 
+
+            currentEditRow = null;
+        }
+
+        function saveChanges(row) {
+            const fundValueId = row.dataset.id;
+            const formData = new FormData();
+
+            // Собираем данные из полей ввода
+            row.querySelectorAll('.editable').forEach(cell => {
+                const field = cell.dataset.field;
+                const value = cell.querySelector('.value-edit').value;
+                formData.append(field, value);
+            });
+
+            formData.append('fund_value_id', fundValueId);
+
+            // Отправляем запрос на сервер
+            fetch('{{ url_for("admin.update_fund_value") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем отображаемые значения
+                    row.querySelectorAll('.editable').forEach(cell => {
+                        const field = cell.dataset.field;
+                        const value = parseFloat(cell.querySelector('.value-edit').value);
+                        cell.querySelector('.value-display').textContent = value.toFixed(2);
+                    });
+                    
+                    cancelEditing();
+                } else {
+                    showNotification('Ошибка: ' + data.error, 'error');
+                    cancelEditing();
+                }
+            })
+            .catch(error => {
+                showNotification('Ошибка сети', 'error');
+                cancelEditing();
+            });
+        }
+
+        function showNotification(message, type) {
+            // Простое уведомление через alert
+            alert(message);
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Форматирование чисел
+        const formatNumberInput = (input) => {
+            input.value = input.value.replace(/,/g, '.')
+                .replace(/[^\d.]/g, '')
+                .replace(/^(\d*\.?)|(\d*)\.?/g, '$1$2');
+        };
+        
+        // Проверка существующих дат
+        const existingDates = {{ available_dates | tojson | safe }};
+        const dateInput = document.getElementById('date');
+        
+        // Проверка на существующую дату
+        function checkExistingDate() {
+            if (existingDates.includes(dateInput.value)) {
+                dateInput.setCustomValidity('Данные для этой даты уже существуют');
+                dateInput.nextElementSibling.textContent = 'Данные для этой даты уже существуют';
+                dateInput.nextElementSibling.style.display = 'block';
+            } else {
+                dateInput.setCustomValidity('');
+                dateInput.nextElementSibling.style.display = 'none';
+            }
+        }
+        
+        // Назначение обработчиков
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.addEventListener('input', function() {
+                formatNumberInput(this);
+                if (this.form.classList.contains('was-validated')) {
+                    this.setCustomValidity('');
+                    this.nextElementSibling.style.display = 'none';
+                }
+            });
+        });
+        
+        // Проверка даты при изменении
+        dateInput.addEventListener('change', checkExistingDate);
+        
+        // Валидация формы
+        const fundForm = document.getElementById('fundForm');
+        fundForm.addEventListener('submit', function(e) {
+            // Проверяем дату перед отправкой
+            checkExistingDate();
+            
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Показываем все ошибки
+                this.querySelectorAll(':invalid').forEach(el => {
+                    el.nextElementSibling.style.display = 'block';
+                });
+            }
+            this.classList.add('was-validated');
+        });
+        
+        // Проверка доступности даты для удаления
+        const deleteDateInput = document.getElementById('delete_fund_date');
+        const dateStatus = document.getElementById('dateStatus');
+        const deleteButton = document.getElementById('deleteFundButton');
+        
+        if (existingDates.length) {
+            deleteDateInput.min = existingDates[existingDates.length - 1];
+            deleteDateInput.max = existingDates[0];
+            
+            deleteDateInput.addEventListener('input', function() {
+                const exists = existingDates.includes(this.value);
+                dateStatus.innerHTML = exists ? 
+                    '<div class="alert alert-success">Данные для этой даты существуют</div>' :
+                    '<div class="alert alert-warning">Нет данных для выбранной даты</div>';
+                deleteButton.disabled = !exists;
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateFrom = document.getElementById('date_from');
+        const dateTo = document.getElementById('date_to');
+        const applyBtn = document.getElementById('apply_filter');
+        const resetBtn = document.getElementById('reset_filter');
+        const tableRows = document.querySelectorAll('#fund_values_table tr');
+        
+        // Применение фильтра
+        applyBtn.addEventListener('click', function() {
+            const from = dateFrom.value;
+            const to = dateTo.value || from; // Если не указана конечная дата, фильтруем по одной дате
+            
+            tableRows.forEach(row => {
+                const rowDate = row.dataset.date;
+                if ((!from || rowDate >= from) && (!to || rowDate <= to)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Сброс фильтра
+        resetBtn.addEventListener('click', function() {
+            dateFrom.value = '';
+            dateTo.value = '';
+            tableRows.forEach(row => {
+                row.style.display = '';
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,400 @@
+{% extends "base_admin.html" %}
+
+{% block title %}{% if event %}Редактирование{% else %}Добавление{% endif %} события{% endblock %}
+
+{% block style %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+    
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: var(--white);
+        box-sizing: border-box;
+    }
+    
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    
+    textarea {
+        height: 100px;
+        resize: vertical;
+    }
+    
+    .file-info {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        display: inline;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .admin_bottom {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .back-btn {
+        color: #000f9f;
+        text-decoration: none;
+        margin-right: 20px;
+        padding: 10px 16px;
+        border: 1px solid #000f9f;
+        border-radius: 0.5rem;
+    }
+    
+    .back-btn:hover {
+        background-color: rgba(0, 15, 159, 0.05);
+    }
+    
+    .submit-btn {
+        background: #000f9f;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-btn:hover {
+        box-shadow: 0 4px 16px rgba(0, 15, 159, 0.2);
+        background: #000d80;
+    }
+    
+    /* Стили для загрузки файлов */
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .file-input-button {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 6px 6px;
+        background: #f8f9fa;
+        color: #495057;
+        cursor: pointer;
+        display: inline-block;
+        width: 150px;
+        text-align: center;
+    }
+    
+    .form-control-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .file-name {
+        margin-left: 15px;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .image-preview {
+        margin-top: 10px;
+        max-width: 300px;
+        max-height: 200px;
+        border: 1px dashed #d4d4d4;
+        padding: 10px;
+        display: none;
+        text-align: center;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 180px;
+        width: auto;
+        height: auto;
+    }
+    
+    .current-image {
+        margin-top: 10px;
+        max-width: 300px;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: center;
+        border-radius: 5px;
+    }
+    
+    .current-image img {
+        max-width: 280px;
+        max-height: 180px;
+        width: auto;
+        height: auto;
+    }
+    
+    /* Валидация */
+    .invalid-feedback {
+        display: none;
+        color: var(--error);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .was-validated input:invalid + .invalid-feedback,
+    .was-validated input:invalid ~ .invalid-feedback,
+    .was-validated textarea:invalid + .invalid-feedback,
+    .was-validated select:invalid + .invalid-feedback {
+        display: block;
+    }
+    
+    .was-validated input:invalid,
+    .was-validated textarea:invalid,
+    .was-validated select:invalid {
+        border-color: var(--error);
+    }
+    
+    .alert-margin {
+        margin-top: 20px;
+    }
+    
+    /* Карточка */
+    .card-body {
+        padding: 24px;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .admin_bottom {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            margin-right: 0;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .submit-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            {% if event %}
+                Редактирование события
+            {% else %}
+                Добавление нового события
+            {% endif %}
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Дата события с календариком -->
+                <div class="form-group date-picker">
+                    <label for="date">Дата события:</label>  <!-- Изменил id и name на date -->
+                    <input type="date" name="date" id="date" required 
+                        value="{% if event %}{{ event.date.strftime('%Y-%m-%d') if event.date else '' }}{% endif %}">
+                    <div class="invalid-feedback">Пожалуйста, выберите дату события.</div>
+                </div>
+                
+                <!-- Текст события -->
+                <div class="form-group">
+                    <label for="title">Текст события:</label>
+                    <textarea name="title" id="title" required 
+                        placeholder="Введите текст события...">{{ event.title if event else '' }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, укажите текст события.</div>
+                </div>
+
+                <!-- Краткое пояснение -->
+                <div class="form-group">
+                    <label for="short_note">Краткое пояснение:</label>
+                    <input type="text" name="short_note" id="short_note" 
+                        value="{{ event.short_note if event and event.short_note else '' }}"
+                        placeholder="Пример: Рост активов +50%">
+                    <div class="file-info">Необязательное поле для краткого пояснения</div>
+                </div>
+
+                <!-- Фотография события -->
+                <div class="form-group">
+                    <label for="photo">Фотография события:</label>
+                    
+                    {% if event and event.photo %}
+                    <div class="current-image">
+                        <p><strong>Текущее фото:</strong></p>
+                        <img src="data:{{ event.photo_mimetype }};base64,{{ event.photo|b64encode }}" 
+                             alt="Фото события">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="delete_photo" name="delete_photo" value="yes">
+                            <label for="delete_photo">Удалить текущее фото</label>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="file-input-wrapper">
+                        <input type="file" id="photo" name="photo" 
+                            class="form-control-file" accept="image/*">
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                    </div>
+                    <div class="file-info">Необязательное поле. Форматы: JPG, PNG, GIF, WebP</div>
+                    
+                    <div class="image-preview" id="photo_preview">
+                        <img src="" alt="Предпросмотр фотографии">
+                    </div>
+                </div>
+                
+                <div class="admin_bottom">
+                    <a href="{{ url_for('admin.events_admin') }}" class="back-btn">← Назад</a>
+                    <button type="submit" class="submit-btn">
+                        {% if event %}Сохранить изменения{% else %}Добавить событие{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    
+    // Валидация формы
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+    
+    // Обработка фотографии
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('photo_preview');
+    
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            const fileName = this.nextElementSibling.nextElementSibling;
+            
+            if (file) {
+                fileName.textContent = file.name;
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (photoPreview) {
+                            photoPreview.querySelector('img').src = e.target.result;
+                            photoPreview.style.display = 'block';
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                fileName.textContent = 'Файл не выбран';
+                if (photoPreview) {
+                    photoPreview.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    // Клик по кнопке выбора файла
+    document.querySelectorAll('.file-input-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const fileInput = this.parentElement.querySelector('.form-control-file');
+            if (fileInput) {
+                fileInput.click();
+            }
+        });
+    });
+    
+    // Устанавливаем сегодняшнюю дату по умолчанию для нового события
+    {% if not event %}
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayFormatted = `${year}-${month}-${day}`;
+    
+    const dateInput = document.getElementById('date');  <!-- Изменил на date -->
+    if (dateInput && !dateInput.value) {
+        dateInput.value = todayFormatted;
+    }
+    {% endif %}
+    
+    // Убрал преобразование русской даты, так как теперь дата хранится как Date
+    {% if event and event.date %}
+    // Для отладки - оставил пустым, так как дата уже в правильном формате
+    const dateInput = document.getElementById('date');
+    {% endif %}
+});
+</script>
+{% endblock %}

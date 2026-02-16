@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анимация шарика по квадрату</title>
+    <style>
+        canvas {
+            background: #ffffff;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const radius = 12;
+        const speed = 4; // Скорость движения
+        let posX = 50; // Начальная позиция
+        let posY = 50; // Начальная позиция
+        let direction = 0; // Направление движения (0 - вправо, 1 - вниз, 2 - влево, 3 - вверх)
+        const size = 400; // Размер стороны квадрата
+
+        function draw() {
+            ctx.fillStyle = `rgba(255, 255, 255, 0.09)`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#000f9f';
+            ctx.beginPath();
+            ctx.arc(posX, posY, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Обновление позиции шарика
+            switch (direction) {
+                case 0: // Вправо
+                    posX += speed;
+                    if (posX >= 50 + size) direction = 1;
+                    break;
+                case 1: // Вниз
+                    posY += speed;
+                    if (posY >= 50 + size) direction = 2;
+                    break;
+                case 2: // Влево
+                    posX -= speed;
+                    if (posX <= 50) direction = 3;
+                    break;
+                case 3: // Вверх
+                    posY -= speed;
+                    if (posY <= 50) direction = 0;
+                    break;
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>

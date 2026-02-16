@@ -1,0 +1,76 @@
+{% extends "main/base_documents.html" %}
+
+{% block title %}Документы фондов{% endblock %}
+
+{% block documents_style %}
+<style>
+    body {
+        margin-top: 100px;
+    }
+    .documents-container {
+        margin-bottom: 30px;
+    }
+    .funds-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin: 30px 7px 0 7px;
+    }
+    @media (max-width: 600px) {
+        .funds-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+    .fund-card {
+        background: white;
+        border-left: 3px solid #000f9f;
+        padding: 10px;
+        transition: transform 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .fund-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .fund-name {
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    .documents-count i {
+        margin-right: 0.5rem;
+    }
+    
+    .page-header {
+        margin: 0px 7px 0 7px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/documents/uk">Раскрытие информации</a></li>
+        <li>Документы фондов</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block documents_content %}
+    <div class="documents-container">
+        <h1 class="header5">Документы фондов</h1>
+        <div class="page-header">Выберите фонд для просмотра документов</div>
+        
+        <div class="funds-grid">
+            {% for fund in funds %}
+            <a href="{{ url_for('fund_documents', fund_name=fund.url_name) }}" class="fund-card">
+                <div class="fund-name">{{ fund.name }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

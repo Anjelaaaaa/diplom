@@ -1,0 +1,243 @@
+{% extends "main/base_documents.html" %}
+
+{% block title %}Информационные сообщения{% endblock %}
+
+{% block documents_style %}
+<style>
+    .messages-container {
+        display: grid;
+        gap: 10px;
+    }
+    
+    .message-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .message-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .message-header {
+        margin-bottom: 15px;
+    }
+    
+    .message-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        line-height: 1.4;
+    }
+    
+    .message-date {
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .message-preview {
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+    
+    .read-more {
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+        gap: 5px;
+        transition: color 0.2s ease;
+    }
+    
+    .read-more:hover {
+        color: #000c79;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .page-item {
+        display: inline-block;
+    }
+    
+    .page-link {
+        padding: 8px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        color: #000f9f;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .page-link:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #000f9f;
+        color: white;
+        border-color: #000f9f;
+    }
+    
+    .no-messages {  
+        text-align: center;
+        padding: 40px;
+        font-style: italic;
+    }
+    
+    @media (max-width: 768px) {
+        .messages-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    .document-item {
+        background: white;
+        border-radius: 0.5rem;
+        background: rgb(248, 249, 250);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-name {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    .document-name:hover {
+        color: #000f9f;
+    }
+    
+    .document-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000f9f;
+    }
+    
+    .document-meta {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: 0.7s;
+    }
+    
+    .document-icon:hover {
+        color: #e4e4e4;
+        transition: 0.7s;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/documents/uk">Раскрытие информации</a></li>
+        <li>Информационные сообщения</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block documents_content %}
+    <h1 class="header5">Информационные сообщения</h1>
+    
+    {% if messages.items %}
+        <div class="messages-container">
+                {% for message in messages.items %}
+                <a href="{{ url_for('message_detail', message_id=message.id) }}" class="all-link">
+                    <div class="message-card">
+                        <div class="message-header">
+                            <h2 class="message-title">{{ message.name }}</h2>
+                            <div class="message-date">
+                                {{ message.upload_date.strftime('%d %B %Y года')|replace(
+                                    'January', 'января'
+                                )|replace('February', 'февраля'
+                                )|replace('March', 'марта'
+                                )|replace('April', 'апреля'
+                                )|replace('May', 'мая'
+                                )|replace('June', 'июня'
+                                )|replace('July', 'июля'
+                                )|replace('August', 'августа'
+                                )|replace('September', 'сентября'
+                                )|replace('October', 'октября'
+                                )|replace('November', 'ноября'
+                                )|replace('December', 'декабря') }}
+                            </div>
+                        </div>
+                        
+                        <div class="message-preview">
+                            {{ message.inform_text|truncate(200) if message.inform_text else "Текст сообщения отсутствует" }}
+                        </div>
+
+                        {% if message.url %}
+                            <div class="document-item">
+                                <a href="{{ message.url }}" download class="document-icon">
+                                    <div class="document-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                </a>
+                                <div class="document-info">
+                                    <a href="{{ message.url }}" target="_blank" class="all-link">
+                                        <div class="document-name">{{ message.document_title if message.document_title }}</div>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <a href="{{ url_for('message_detail', message_id=message.id) }}" class="read-more">
+                            Читать полностью 
+                        </a>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    
+        {% if messages.pages > 1 %}
+        <div class="pagination">
+            {% for page_num in messages.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == messages.page %}
+                        <span class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </span>
+                    {% else %}
+                        <span class="page-item">
+                            <a href="{{ url_for('messages_documents', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

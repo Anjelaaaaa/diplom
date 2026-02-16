@@ -1,0 +1,167 @@
+{% extends "main/base_documents.html" %}
+
+{% block title %}{{ message.name }}{% endblock %}
+
+{% block documents_style %}
+<style>
+    .message-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        color: #2b2b2b;
+    }
+    
+    .message-detail-header {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eaecef;
+    }
+    
+    .message-detail-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 15px 0;
+        line-height: 1.4;
+    }
+    
+    .message-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .message-date {
+       font-size: 14px;
+    }
+    
+    .message-content {
+        line-height: 1.8;
+        margin-bottom: 30px;
+        font-size: 14px;
+    }
+    
+    .message-content p {
+        margin-bottom: 1.2em;
+    }
+    
+    .attachment-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .message-detail-container {
+            padding: 20px;
+        }
+    }
+    
+    .document-item {
+        background: white;
+        border-radius: 0.5rem;
+        background: rgb(248, 249, 250);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-name {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    .document-name:hover {
+        color: #000f9f;
+    }
+    
+    .document-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000f9f;
+    }
+    
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: 0.7s;
+    }
+    
+    .document-icon:hover {
+        color: #e4e4e4;
+        transition: 0.7s;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/documents/uk">Раскрытие информации</a></li>
+        <li><a href="{{ url_for('messages_documents') }}">Информационные сообщения</a></li>
+        <li>{{ message.name|truncate(30) }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block documents_content %}
+    <div class="message-detail-container">
+        <div class="message-detail-header">
+            <h1 class="message-detail-title">{{ message.name }}</h1>
+            
+            <div class="message-meta">
+                <div class="message-date">
+                    {{ message.upload_date.strftime('%d %B %Y года')|replace(
+                        'January', 'января'
+                    )|replace('February', 'февраля'
+                    )|replace('March', 'марта'
+                    )|replace('April', 'апреля'
+                    )|replace('May', 'мая'
+                    )|replace('June', 'июня'
+                    )|replace('July', 'июля'
+                    )|replace('August', 'августа'
+                    )|replace('September', 'сентября'
+                    )|replace('October', 'октября'
+                    )|replace('November', 'ноября'
+                    )|replace('December', 'декабря') }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="message-content">
+            {% if message.inform_text %}
+                {{ message.inform_text|replace('\n', '<br>')|safe }}
+            {% else %}
+                <p class="text-muted">Текст сообщения отсутствует.</p>
+            {% endif %}
+        </div>
+        
+        {% if message.url %}
+            <div class="document-item">
+                <a href="{{ message.url }}" download class="document-icon">
+                    <div class="document-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                </a>
+                <div class="document-info">
+                    <a href="{{ message.url }}" target="_blank" class="all-link">
+                        <div class="document-name">{{ message.document_title if message.document_title }}</div>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base_admin.html" %}
+
+{% block title %}{{ current_fund.short_name }}{% endblock %}
+
+{% block main %} 
+    <div class="container"> 
+        <!-- Навигация по фондам -->
+        <div class="nav">
+            {% for fund in short_names %}
+                <a class="{% if fund.url_name == current_fund.url_name %}active{% endif %}" 
+                   href="{{ url_for('admin.fund_admin', fund_name=fund.url_name) }}">
+                    {{ fund.short_name }}
+                </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Навигация по разделам фонда -->
+        <div class="nav">
+            <a class="{% if request.path.endswith('/fund-values') %}active{% endif %}"
+               href="{{ url_for('admin.handle_fund_values', fund_name=current_fund.url_name) }}">
+                Значения стоимости пая, бенчмарка и СЧА
+            </a>
+            <a class="{% if request.path.endswith('/fund-composition') %}active{% endif %}"
+               href="{{ url_for('admin.handle_fund_composition', fund_name=current_fund.url_name) }}">
+                Состав фонда
+            </a>
+            <a class="{% if request.path.endswith('/documents') %}active{% endif %}"
+               href="{{ url_for('admin.handle_documents', fund_name=current_fund.url_name) }}">
+                Документы
+            </a>
+        </div>
+    </div>
+{% endblock %}

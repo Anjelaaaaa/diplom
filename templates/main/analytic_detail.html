@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}{{ analytic.title }}{% endblock %}
+
+{% block style %}
+<style>
+:root {
+    --primary: #000f9f;
+    --primary-light: rgba(0, 15, 159, 0.1);
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --surface: #f8fafc;
+    --background: #ffffff;
+}
+
+body {
+    margin-top: 100px;
+}
+
+.container {
+    max-width: 800px;
+    padding: 0 1.5rem;
+    margin: 0 auto;
+}
+
+/* Кнопка назад */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: var(--background);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: translateX(-4px);
+}
+
+/* Шапка аналитики */
+.analytic-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.analytic-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.analytic-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.analytic-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Обложка аналитики */
+.analytic-cover {
+    margin-bottom: 3rem;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.analytic-cover img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.analytic-cover:hover img {
+    transform: scale(1.02);
+}
+
+/* Контент аналитики */
+.analytic-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.analytic-content > * {
+    margin-bottom: 2rem;
+}
+
+.analytic-content p {
+    margin-bottom: 1.5rem;
+}
+
+.analytic-content h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 3rem 0 1.5rem;
+    color: var(--text);
+}
+
+.analytic-content h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 2.5rem 0 1.25rem;
+    color: var(--text);
+}
+
+.analytic-content ul, 
+.analytic-content ol {
+    padding-left: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.analytic-content li {
+    margin-bottom: 0.5rem;
+}
+
+.analytic-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--text-light);
+}
+
+/* Изображения в контенте */
+.analytic-image {
+    margin: 3rem auto;
+    max-width: 100%;
+    text-align: center;
+}
+
+.analytic-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: block;
+    margin: 0 auto;
+}
+
+.analytic-image .caption {
+    margin-top: 1rem;
+    font-size: 14px;
+    color: var(--text-light);
+    text-align: center;
+    font-style: italic;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Горизонтальные изображения */
+.analytic-image.horizontal img {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Вертикальные изображения */
+.analytic-image.vertical img {
+    max-height: 600px;
+    object-fit: contain;
+}
+
+/* Код/цитаты */
+.code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+}
+
+/* Разделитель */
+.content-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 3rem 0;
+    opacity: 0.5;
+}
+
+/* Футер аналитики */
+.analytic-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    body {
+        margin-top: 140px;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .analytic-title {
+        font-size: 14px;
+    }
+    
+    .analytic-cover img {
+        height: 250px;
+    }
+    
+    .analytic-content {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+    
+    .analytic-content h2 {
+        font-size: 14px;
+    }
+    
+    .analytic-content h3 {
+        font-size: 14px;
+    }
+    
+    .back-button {
+        padding: 0.625rem 1.25rem;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .analytic-title {
+        font-size: 14px;
+    }
+    
+    .analytic-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="{{ url_for('market_analytics_list') }}">Рынок и аналитика</a></li>
+        <li>{{ analytic.title|truncate(30) }}</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <!-- Шапка аналитики -->
+    <div class="analytic-header">
+        <h1 class="header6">{{ analytic.title }}</h1>
+        <div class="analytic-meta">
+            <div class="analytic-date">
+                <span>{{ analytic.analytics_date.strftime('%d.%m.%Y') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Обложка аналитики -->
+    {% if analytic.cover_image %}
+    <div class="analytic-cover">
+        <img src="data:{{ analytic.cover_mimetype }};base64,{{ analytic.cover_image|b64encode }}" 
+             alt="{{ analytic.title }}">
+    </div>
+    {% endif %}
+
+    <!-- Контент аналитики -->
+    <article class="analytic-content">
+        {% for block in blocks %}
+            {% if block.block_type == 'text' %}
+                <div class="analytic-text">
+                    {{ block.content|safe }}
+                </div>
+            
+            {% elif block.block_type == 'image' and block.image_data %}
+                <div class="analytic-image {% if block.content %}has-caption{% endif %}">
+                    <img src="data:{{ block.mimetype }};base64,{{ block.image_data|b64encode }}" 
+                         alt="{% if block.content %}{{ block.content }}{% else %}Изображение в аналитике{% endif %}"
+                         loading="lazy">
+                    
+                    {% if block.content %}
+                    <div class="caption">
+                        {{ block.content }}
+                    </div>
+                    {% endif %}
+                </div>
+            
+            {% elif block.block_type == 'divider' %}
+                <div class="content-divider"></div>
+            
+            {% elif block.block_type == 'quote' %}
+                <blockquote>
+                    {{ block.content|safe }}
+                </blockquote>
+            
+            {% elif block.block_type == 'code' %}
+                <pre class="code-block"><code>{{ block.content }}</code></pre>
+            
+            {% else %}
+                <div class="content-block">
+                    {{ block.content|safe }}
+                </div>
+            {% endif %}
+        
+        {% else %}
+            <div class="empty-content">
+                <p>Контент аналитики пока не добавлен.</p>
+            </div>
+        {% endfor %}
+    </article>
+
+    <!-- Футер аналитики -->
+    <div class="analytic-footer">
+        <a href="{{ url_for('market_analytics_list') }}" class="back-button">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            К списку аналитики
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическое определение типа изображения
+    const analyticImages = document.querySelectorAll('.analytic-image img');
+    
+    analyticImages.forEach(img => {
+        const handleImageLoad = function() {
+            const width = this.naturalWidth;
+            const height = this.naturalHeight;
+            const container = this.closest('.analytic-image');
+            
+            if (height > width * 1.5) {
+                container.classList.add('vertical');
+            } else if (width > height * 1.5) {
+                container.classList.add('horizontal');
+            }
+        };
+        
+        if (img.complete) {
+            handleImageLoad.call(img);
+        } else {
+            img.addEventListener('load', handleImageLoad);
+        }
+    });
+    
+    // Плавное появление изображений
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.analytic-image img').forEach(img => {
+        img.style.opacity = '0';
+        img.style.transform = 'translateY(10px)';
+        img.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        imageObserver.observe(img);
+    });
+});
+</script>
+{% endblock %}

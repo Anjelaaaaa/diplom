@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}Документы фонда {{ fund.name }}{% endblock %}
+
+{% block style %}
+<style>
+    body {
+        margin-top: 100px;
+    }
+    
+    .documents-container {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 30px;
+    }
+    
+    .types-sidebar {
+        width: 270px;
+        flex-shrink: 0;
+        margin: 10px 0 30px 0;
+        font-size: 14px;
+    }
+    
+    .types-list {
+        position: sticky;
+        top: 120px;
+    }
+    
+    .type-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: block;
+        color: #2b2b2b;
+        text-decoration: none;
+        border-left: 1px solid #dee2e6;
+    }
+    
+    .type-item:hover {
+        background: rgb(248, 249, 250);
+        color: #000f9f;
+        font-weight: 500;
+        border-left: 3px solid  #000f9f;
+    }
+    
+    .type-item.active {
+        background: rgb(248, 249, 250);
+        color: #000f9f;
+        font-weight: 500;
+        border-left: 3px solid  #000f9f;
+    }
+    
+    .documents-content {
+        flex-grow: 1;
+    }
+    
+    .document-section {
+        margin-bottom: 2rem;
+        display: none;
+    }
+    
+    .document-section.active {
+        display: block;
+    }
+    
+    .document-item {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        padding: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-name {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    .document-name:hover {
+        color: #000f9f;
+    }
+    .document-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000f9f;
+    }
+    .document-meta {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .document-action a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .document-action a:hover {
+        text-decoration: underline;
+    }
+    
+    .no-documents {
+        padding: 2rem;
+        text-align: center;
+        color: #666;
+    }
+    
+    @media (max-width: 1000px) {
+        .documents-container {
+            flex-direction: column;
+        }
+        
+        .types-sidebar {
+            width: 100%;
+            margin: 10px 0 0 0;
+        }
+        
+        .type-item {
+            white-space: nowrap;
+        }
+    }
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: 0.7s;
+    }
+    .document-icon:hover {
+        color: #e4e4e4;
+        transition: 0.7s;
+    }
+    .section-title {
+        font-weight: 500;
+    }
+    .styled-text {
+        padding: 0 7px 20px 7px;
+    }
+
+    /* Стили для красивой таблицы */
+    .table-responsive {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+        text-align: center;
+    }
+    
+    .table tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .table tr.table-row:hover {
+        background-color: #f8fafc;
+    }
+    
+    .table td, th {
+        padding: 16px 20px;
+        border-bottom: 1px solid #eaecef;
+        vertical-align: top;
+    }
+    
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table a {
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .table a:hover {
+        text-decoration: underline;
+    }
+
+
+    .table th.text-center {
+        vertical-align: middle;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .table td {
+        padding: 8px 12px;
+    }
+    .hidden-value {
+        display: none;
+    }
+    /* Стили для кнопки "Показать еще" */
+    .btn-show-more {
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 15px;
+        background: rgb(248, 249, 250);
+        color: #000f9f;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-icon {
+        font-size: 18px;
+        font-weight: 700;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-show-more:hover .btn-icon {
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <nav class="breadcrumb" aria-label="Навигация по сайту">
+        <ol>
+            <li><a href="/">Главная</a></li>
+            <li><a href="/documents/funds">Раскрытие информации</a></li>
+            <li>{{ clean_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="header5">{{ fund.short_name }}</div>
+
+    <!-- Добавляем блок с текстом из базы данных -->
+    {% if text_for_display %}
+        <div class="styled-text">{{ text_for_display|safe }}</div>
+    {% endif %}
+    
+    <div class="documents-container">
+        <!-- Боковая панель с типами документов -->
+        {% if documents_by_type or show_values_tab %}
+        <div class="types-sidebar">
+            <div class="types-list">
+                {% if show_values_tab %}
+                <div class="type-item {% if not documents_by_type or request.args.get('tab') == 'values' %}active{% endif %}" 
+                     data-type="values">
+                    Стоимость пая и СЧА
+                </div>
+                {% endif %}
+                
+                {% for doc_type in documents_by_type.keys() %}
+                <div class="type-item {% if not show_values_tab and loop.first or request.args.get('tab') != 'values' and loop.first %}active{% endif %}" 
+                     data-type="{{ doc_type|replace(' ', '-')|lower }}">
+                    {{ doc_type }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Основное содержание -->
+        <div class="documents-content">
+            {% if show_values_tab %}
+            <!-- Секция стоимости пая и СЧА -->
+            <div class="document-section {% if not documents_by_type or request.args.get('tab') == 'values' %}active{% endif %}" 
+                 id="values">
+                <h2 class="section-title">Стоимость пая и СЧА</h2>
+                
+                <div class="table-responsive">
+                    <table class="table table-values">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th colspan="2" class="text-center">
+                                    Величина отклонения прироста расчетной стоимости инвестиционного пая<br>
+                                    от прироста значения индекса, предусмотренного инвестиционной декларацией
+                                </th>
+                            </tr>
+                            <tr class="table-header-main">
+                                <th class="text-left">Дата</th>
+                                <th class="text-right">Стоимость пая</th>
+                                <th class="text-right">СЧА</th>
+                                <th class="text-right">Бенчмарк</th>
+                                <th class="">За 20 рабочих дней (%)</th>
+                                <th class="">За 250 рабочих дней (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for value in fund_values %}
+                            <tr class="table-row {% if loop.index > 50 %}hidden-value{% endif %}" 
+                                data-index="{{ loop.index }}">
+                                <td class="text-left date-cell">{{ value.date.strftime('%d.%m.%Y') }}</td>
+                                <td class="text-right">{{ "%.2f"|format(value.share_price) if value.share_price else '-' }}</td>
+                                <td class="text-right">{{ "%.2f"|format(value.scha) if value.scha else '-' }}</td>
+                                <td class="text-right">{{ "%.2f"|format(value.benchmark) if value.benchmark else '-' }}</td>
+                                <td class="text-center deviation-cell">
+                                    {{ "%.2f"|format(value.deviation_20d * 50) if value.deviation_20d is not none else '-' }}
+                                </td>
+                                <td class="text-center deviation-cell">
+                                    {{ "%.2f"|format(value.deviation_250d * 50) if value.deviation_250d is not none else '-' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if values_count > 50 %}
+                <div class="text-center mt-3">
+                    <button class="btn-show-more" id="loadMoreValues">
+                        <span class="btn-text">Показать еще</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% for doc_type, docs in documents_by_type.items() %}
+            <div class="document-section {% if show_values_tab and request.args.get('tab') != 'values' and loop.first or not show_values_tab and loop.first %}active{% endif %}" 
+                 id="{{ doc_type|replace(' ', '-')|lower }}">
+                <h2 class="section-title">{{ doc_type }}</h2>
+                <div class="documents-list">
+                    {% for doc in docs %}
+                    <div class="document-item">
+                        <a href="{{ url_for('download_document', filename=doc.url.split('/')[-1]) }}" download class="document-link all-link">
+                            <div class="document-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                        </a>
+                        <div class="document-info">
+                            <a href="{{ doc.url }}" target="_blank" class="all-link">
+                                <div class="document-name">{{ doc.name }}</div>
+                            </a>
+                            <div class="document-meta">
+                                Загружен: {{ doc.upload_date.strftime('%d.%m.%Y') }}
+                                {% if doc.expiration_date %}
+                                <br>Действует до: {{ doc.expiration_date.strftime('%d.%m.%Y') }}
+                                {% endif %}
+                            </div> 
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем все элементы типов и секций документов
+        const typeItems = document.querySelectorAll('.type-item');
+        const docSections = document.querySelectorAll('.document-section');
+        
+        // Обработчик клика по типу документа
+        typeItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Удаляем активный класс у всех типов
+                typeItems.forEach(i => i.classList.remove('active'));
+                // Добавляем активный класс текущему типу
+                this.classList.add('active');
+                
+                // Скрываем все секции документов
+                docSections.forEach(section => section.classList.remove('active'));
+                // Показываем только выбранную секцию
+                const typeId = this.getAttribute('data-type');
+                document.getElementById(typeId).classList.add('active');
+            });
+        });
+        
+        // Активируем первый тип по умолчанию
+        if (typeItems.length > 0 && docSections.length > 0) {
+            typeItems[0].click();
+        }
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('loadMoreValues');
+    
+    if (loadMoreBtn) {
+        let visibleCount = 50;
+        const totalValues = {{ values_count }};
+        const step = 50;
+        const allRows = document.querySelectorAll('.table-row');
+        
+        loadMoreBtn.addEventListener('click', function() {
+            const nextBatch = Math.min(visibleCount + step, totalValues);
+            
+            // Показываем строки с visibleCount до nextBatch
+            for (let i = visibleCount; i < nextBatch; i++) {
+                if (allRows[i]) {
+                    allRows[i].classList.remove('hidden-value');
+                }
+            }
+            
+            visibleCount = nextBatch;
+            
+            // Обновляем кнопку
+            const remaining = totalValues - visibleCount;
+            if (remaining <= 0) {
+                loadMoreBtn.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock%}

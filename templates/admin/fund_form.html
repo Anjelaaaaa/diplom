@@ -1,0 +1,1119 @@
+{% extends "base_admin.html" %}
+
+{% block title %}
+    {% if is_edit %}Редактирование фонда - {{ fund.name }}{% else %}Создание фонда{% endif %}
+{% endblock %}
+
+{% block style %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: var(--white);
+        box-sizing: border-box;
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    
+    textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+    
+    .file-info {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        display: inline;
+    }
+    
+    .admin_bottom {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .back-btn {
+        color: #000f9f;
+        text-decoration: none;
+        margin-right: 20px;
+        padding: 10px 16px;
+        border: 1px solid #000f9f;
+        border-radius: 0.5rem;
+    }
+    
+    .back-btn:hover {
+        background-color: rgba(0, 15, 159, 0.05);
+    }
+    
+    .submit-btn {
+        background: #000f9f;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-btn:hover {
+        box-shadow: 0 4px 16px rgba(0, 15, 159, 0.2);
+        background: #000d80;
+    }
+    
+    /* Стили для загрузки файлов */
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .file-input-button {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 6px 6px;
+        background: #f8f9fa;
+        color: #495057;
+        cursor: pointer;
+        display: inline-block;
+        width: 150px;
+        text-align: center;
+    }
+    
+    .form-control-file {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .file-name {
+        margin-left: 15px;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .image-preview {
+        margin-top: 10px;
+        max-width: 200px;
+        max-height: 200px;
+        border: 1px dashed #d4d4d4;
+        padding: 10px;
+        display: none;
+        text-align: center;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 200px;
+    }
+    
+    /* Стили для текущих изображений (только для редактирования) */
+    .current-image {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        background: #f8f9fa;
+    }
+    
+    .current-image img {
+        max-width: 100%;
+        max-height: 150px;
+        object-fit: contain;
+    }
+    
+    .current-file-info {
+        font-size: 0.875rem;
+        margin-top: 5px;
+        color: #6c757d;
+    }
+    
+    .no-file-info {
+        font-size: 0.875rem;
+        color: #dc3545;
+        margin-top: 5px;
+    }
+    
+    /* Валидация */
+    .invalid-feedback {
+        display: none;
+        color: var(--error);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .was-validated input:invalid + .invalid-feedback,
+    .was-validated input:invalid ~ .invalid-feedback,
+    .was-validated textarea:invalid + .invalid-feedback,
+    .was-validated select:invalid + .invalid-feedback {
+        display: block;
+    }
+    
+    .was-validated input:invalid,
+    .was-validated textarea:invalid,
+    .was-validated select:invalid {
+        border-color: var(--error);
+    }
+    .alert-margin {
+        margin-top: 20px;
+    }
+    
+    /* Стили для динамических блоков */
+    .dynamic-section {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 20px;
+        margin-bottom: 25px;
+        background: #f8fafc;
+    }
+    
+    .dynamic-section h4 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #2d3748;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .dynamic-block {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .dynamic-block:last-child {
+        margin-bottom: 0;
+    }
+    
+    .dynamic-block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .dynamic-block-title {
+        font-weight: 500;
+        color: #4a5568;
+        font-size: 14px;
+    }
+    
+    .remove-btn {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    
+    .remove-btn:hover {
+        background: #c53030;
+    }
+    
+    .condition-item {
+        margin-bottom: 15px;
+    }
+    
+    .condition-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .condition-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .condition-title-input {
+        flex: 1;
+    }
+    
+    .condition-order-input {
+        width: 100px;
+    }
+    
+    .condition-description {
+        margin-top: 10px;
+    }
+    
+    /* Для шагов */
+    .step-item {
+        margin-bottom: 15px;
+    }
+    
+    .step-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .step-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .step-title-input {
+        flex: 1;
+    }
+    
+    .step-time-input {
+        width: 150px;
+    }
+    
+    .step-order-input {
+        width: 100px;
+    }
+    
+    .step-description {
+        margin-top: 10px;
+    }
+    
+    .add-btn {
+        background: #4a5568;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+        transition: all 0.2s ease;
+    }
+    
+    .add-btn:hover {
+        background: #2d3748;
+    }
+    
+    .add-btn span {
+        font-size: 18px;
+    }
+    
+    /* Для управляющего */
+    .manager-block {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .manager-form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    @media (min-width: 768px) {
+        .manager-form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    
+    .manager-full-width {
+        grid-column: 1 / -1;
+    }
+    
+    {% if is_edit and fund.background_image %}
+    body {
+        background-image: url("data:{{ fund.background_mimetype }};base64,{{ fund.background_image | b64encode }}");
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: top center;
+    }
+    {% endif %}
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            {% if is_edit %}Редактирование фонда: {{ fund.short_name }}{% else %}Создание фонда{% endif %}
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Основные поля формы -->
+                <div class="form-group">
+                    <label for="name">Полное название:</label>
+                    <input type="text" name="name" id="name" 
+                        value="{{ fund.name if is_edit else '' }}" required 
+                        oninput="checkFundName()">
+                    <div class="invalid-feedback">Пожалуйста, укажите полное название фонда.</div>
+                    <div id="nameError" class="alert alert-danger alert-margin" style="display: none;">
+                        Фонд с таким названием уже существует
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="short_name">Короткое название:</label>
+                    <input type="text" name="short_name" id="short_name" 
+                        value="{{ fund.short_name if is_edit else '' }}" required>
+                    <div class="invalid-feedback">Пожалуйста, укажите короткое название фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="url_name">URL название:</label>
+                    <input type="text" name="url_name" id="url_name" 
+                        value="{{ fund.url_name if is_edit else '' }}" required 
+                        oninput="checkFundUrl()">
+                    <div class="invalid-feedback">Пожалуйста, укажите URL название фонда.</div>
+                    <div id="urlError" class="alert alert-danger alert-margin" style="display: none;">
+                        Фонд с таким URL названием уже существует
+                    </div>
+                </div>
+
+                <!-- Фоновое изображение -->
+                <div class="form-group">
+                    <label for="background_image">Фоновое изображение:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="background_image" name="background_image" 
+                            class="form-control-file" accept="image/*" {% if not is_edit %}required{% endif %}>
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                        {% if not is_edit %}
+                        <div class="invalid-feedback">Пожалуйста, выберите фоновое изображение</div>
+                        {% endif %}
+                    </div>
+                    <div class="file-info">Рекомендуемый размер: 1920x350px</div>
+                    
+                    {% if is_edit and fund.background_image %}
+                    <div class="current-image">
+                        <p class="current-file-info">Текущее фоновое изображение:</p>
+                        <img src="data:{{ fund.background_mimetype }};base64,{{ fund.background_image | b64encode }}" 
+                             alt="Текущее фоновое изображение">
+                    </div>
+                    {% elif is_edit %}
+                    <div class="no-file-info">Фоновое изображение не загружено</div>
+                    {% endif %}
+                    
+                    <div class="image-preview" id="background_preview">
+                        <img src="" alt="Предпросмотр фона">
+                    </div>
+                </div>
+
+                <!-- Логотип -->
+                <div class="form-group">
+                    <label for="logo">Логотип:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="logo" name="logo" 
+                            class="form-control-file" accept="image/*" {% if not is_edit %}required{% endif %}>
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                        {% if not is_edit %}
+                        <div class="invalid-feedback">Пожалуйста, выберите логотип</div>
+                        {% endif %}
+                    </div>
+                    <div class="file-info">Рекомендуемый размер: 300x300px</div>
+                    
+                    {% if is_edit and fund.logo %}
+                    <div class="current-image">
+                        <p class="current-file-info">Текущий логотип:</p>
+                        <img src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo | b64encode }}" 
+                             alt="Текущий логотип">
+                    </div>
+                    {% elif is_edit %}
+                    <div class="no-file-info">Логотип не загружен</div>
+                    {% endif %}
+                    
+                    <div class="image-preview" id="logo_preview">
+                        <img src="" alt="Предпросмотр логотипа">
+                    </div>
+                </div>
+                   
+                <div class="form-group">
+                    <label for="description">Описание:</label>
+                    <textarea name="description" id="description" required>{{ fund.description if is_edit else '' }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="strategy">Стратегия:</label>
+                    <textarea name="strategy" id="strategy" required>{{ fund.strategy if is_edit else '' }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, опишите стратегию фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additional_info">Дополнительная информация:</label>
+                    <textarea name="additional_info" id="additional_info">{{ fund.additional_info if is_edit else '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_description">Описание для карточки:</label>
+                    <input type="text" name="cards_description" id="cards_description" 
+                        value="{{ fund.cards_description if is_edit else '' }}" required>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание для карточки.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="footer_description">Описание для футера:</label>
+                    <textarea name="footer_description" id="footer_description" required>
+                        {{- fund.footer_description if is_edit else '' -}}
+                    </textarea>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание для футера.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_amount">Рекомендуемая сумма:</label>
+                    <input type="number" name="cards_amount" id="cards_amount" 
+                        value="{{ fund.cards_amount if is_edit else '' }}" required min="1">
+                    <div class="invalid-feedback">Пожалуйста, укажите рекомендуемую сумму (не менее 1).</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_period">Рекомендуемый период (лет):</label>
+                    <input type="number" name="cards_period" id="cards_period" 
+                        value="{{ fund.cards_period if is_edit else '' }}" required min="1">
+                    <div class="invalid-feedback">Пожалуйста, укажите рекомендуемый период (не менее 1 года).</div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="cards_animation" id="cards_animation" 
+                        {{ 'checked' if is_edit and fund.cards_animation }}>
+                    <label for="cards_animation" style="display: inline;">Показывать анимацию</label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="for_qualified_investors" id="for_qualified_investors" 
+                        {{ 'checked' if is_edit and fund.for_qualified_investors }}>
+                    <label for="for_qualified_investors" style="display: inline;">Только для квалифицированных инвесторов</label>
+                </div>
+                
+                <!-- Секция условий инвестирования -->
+                <div class="dynamic-section">
+                    <h4>Условия инвестирования</h4>
+                    <div id="conditions-container">
+                        <!-- Первое условие (без крестика) -->
+                        <div class="dynamic-block">
+                            <div class="condition-item">
+                                <div class="condition-header">
+                                    <div class="condition-title-input form-group">
+                                        <label for="conditions_title_0">Заголовок:</label>
+                                        <input type="text" name="conditions_title[]" id="conditions_title_0" 
+                                            value="{% if is_edit and fund.conditions and fund.conditions|length > 0 %}{{ fund.conditions[0].title }}{% endif %}" required>
+                                        <div class="invalid-feedback">Укажите заголовок</div>
+                                    </div>
+                                    <div class="condition-order-input form-group">
+                                        <label for="conditions_order_0">Порядок:</label>
+                                        <input type="number" name="conditions_order[]" id="conditions_order_0" 
+                                            value="{% if is_edit and fund.conditions and fund.conditions|length > 0 %}{{ fund.conditions[0].order }}{% else %}1{% endif %}" min="1">
+                                    </div>
+                                </div>
+                                <div class="condition-description form-group">
+                                    <label for="conditions_description_0">Описание:</label>
+                                    <textarea name="conditions_description[]" id="conditions_description_0" required rows="3">
+                                        {%- if is_edit and fund.conditions and fund.conditions|length > 0 -%}
+                                            {{- fund.conditions[0].description -}}
+                                        {%- endif -%}
+                                    </textarea>
+                                    <div class="invalid-feedback">Укажите описание</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Существующие условия при редактировании (начиная со второго) -->
+                        {% if is_edit and fund.conditions and fund.conditions|length > 1 %}
+                            {% for condition in fund.conditions %}
+                                {% if loop.index > 1 %}
+                                <div class="dynamic-block" data-id="{{ condition.id }}">
+                                    <div class="dynamic-block-header">
+                                        <span class="dynamic-block-title">Дополнительное условие</span>
+                                        <button type="button" class="remove-btn" onclick="removeCondition(this)">×</button>
+                                    </div>
+                                    <div class="condition-item">
+                                        <div class="condition-header">
+                                            <div class="condition-title-input form-group">
+                                                <label>Заголовок:</label>
+                                                <input type="text" name="conditions_title[]" value="{{ condition.title }}" required>
+                                                <div class="invalid-feedback">Укажите заголовок</div>
+                                            </div>
+                                            <div class="condition-order-input form-group">
+                                                <label>Порядок:</label>
+                                                <input type="number" name="conditions_order[]" value="{{ condition.order }}" min="1">
+                                            </div>
+                                        </div>
+                                        <div class="condition-description form-group">
+                                            <label>Описание:</label>
+                                            <textarea name="conditions_description[]" required rows="3">{{ condition.description }}</textarea>
+                                            <div class="invalid-feedback">Укажите описание</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <!-- Дополнительные условия будут добавляться здесь -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addCondition()">
+                        <span>+</span> Добавить условие
+                    </button>
+                </div>
+
+                <!-- Секция шагов инвестирования -->
+                <div class="dynamic-section">
+                    <h4>Шаги инвестирования</h4>
+                    <div id="steps-container">
+                        <!-- Первый шаг (без крестика) -->
+                        <div class="dynamic-block">
+                            <div class="step-item">
+                                <div class="step-header">
+                                    <div class="step-title-input form-group">
+                                        <label for="steps_title_0">Заголовок:</label>
+                                        <input type="text" name="steps_title[]" id="steps_title_0" 
+                                            value="{% if is_edit and fund.steps and fund.steps|length > 0 %}{{ fund.steps[0].title }}{% endif %}" required>
+                                        <div class="invalid-feedback">Укажите заголовок</div>
+                                    </div>
+                                    <div class="step-time-input form-group">
+                                        <label for="steps_time_0">Время:</label>
+                                        <input type="text" name="steps_time[]" id="steps_time_0" 
+                                            value="{% if is_edit and fund.steps and fund.steps|length > 0 %}{{ fund.steps[0].time_required }}{% endif %}" placeholder="5 минут">
+                                    </div>
+                                    <div class="step-order-input form-group">
+                                        <label for="steps_order_0">Порядок:</label>
+                                        <input type="number" name="steps_order[]" id="steps_order_0" 
+                                            value="{% if is_edit and fund.steps and fund.steps|length > 0 %}{{ fund.steps[0].order }}{% else %}1{% endif %}" min="1">
+                                    </div>
+                                </div>
+                                <div class="step-description form-group">
+                                    <label for="steps_description_0">Описание:</label>
+                                    <textarea name="steps_description[]" id="steps_description_0" required rows="3">
+                                        {%- if is_edit and fund.steps and fund.steps|length > 0 -%}
+                                            {{- fund.steps[0].description -}}
+                                        {%- endif -%}
+                                    </textarea>
+                                    <div class="invalid-feedback">Укажите описание</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Существующие шаги при редактировании (начиная со второго) -->
+                        {% if is_edit and fund.steps and fund.steps|length > 1 %}
+                            {% for step in fund.steps %}
+                                {% if loop.index > 1 %}
+                                <div class="dynamic-block" data-id="{{ step.id }}">
+                                    <div class="dynamic-block-header">
+                                        <span class="dynamic-block-title">Дополнительный шаг</span>
+                                        <button type="button" class="remove-btn" onclick="removeStep(this)">×</button>
+                                    </div>
+                                    <div class="step-item">
+                                        <div class="step-header">
+                                            <div class="step-title-input form-group">
+                                                <label>Заголовок:</label>
+                                                <input type="text" name="steps_title[]" value="{{ step.title }}" required>
+                                                <div class="invalid-feedback">Укажите заголовок</div>
+                                            </div>
+                                            <div class="step-time-input form-group">
+                                                <label>Время:</label>
+                                                <input type="text" name="steps_time[]" value="{{ step.time_required }}" placeholder="5 минут">
+                                            </div>
+                                            <div class="step-order-input form-group">
+                                                <label>Порядок:</label>
+                                                <input type="number" name="steps_order[]" value="{{ step.order }}" min="1">
+                                            </div>
+                                        </div>
+                                        <div class="step-description form-group">
+                                            <label>Описание:</label>
+                                            <textarea name="steps_description[]" required rows="3">{{ step.description }}</textarea>
+                                            <div class="invalid-feedback">Укажите описание</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <!-- Дополнительные шаги будут добавляться здесь -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addStep()">
+                        <span>+</span> Добавить шаг
+                    </button>
+                </div>
+
+                <!-- Секция управляющего фондом -->
+                <div class="manager-block">
+                    <h4>Управляющий фондом</h4>
+                    <div class="manager-form-grid">
+                        <div class="form-group">
+                            <label for="managers_name">Имя:</label>
+                            <input type="text" name="managers_name" id="managers_name" 
+                                value="{{ fund.manager.name if is_edit and fund.manager else '' }}" required>
+                            <div class="invalid-feedback">Укажите имя управляющего</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="managers_position">Должность:</label>
+                            <input type="text" name="managers_position" id="managers_position" 
+                                value="{{ fund.manager.position if is_edit and fund.manager else '' }}" required>
+                            <div class="invalid-feedback">Укажите должность</div>
+                        </div>
+                        <div class="manager-full-width form-group">
+                            <label for="managers_photo">Фотография:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="managers_photo" name="managers_photo" 
+                                    class="form-control-file" accept="image/*">
+                                <button type="button" class="file-input-button">Выберите файл</button>
+                                <span class="file-name">Файл не выбран</span>
+                            </div>
+                            <div class="file-info">Рекомендуемый размер: 200x200px</div>
+                            
+                            {% if is_edit and fund.manager and fund.manager.photo %}
+                            <div class="current-image">
+                                <p class="current-file-info">Текущая фотография:</p>
+                                <img src="data:{{ fund.manager.photo_mimetype }};base64,{{ fund.manager.photo | b64encode }}" 
+                                     alt="Текущая фотография">
+                            </div>
+                            {% endif %}
+                            
+                            <div class="image-preview" id="manager_preview">
+                                <img src="" alt="Предпросмотр фото">
+                            </div>
+                        </div>
+                        <div class="manager-full-width form-group">
+                            <label for="managers_comment">Комментарий:</label>
+                            <textarea name="managers_comment" id="managers_comment" rows="3">
+                                {{- fund.manager.comment if is_edit and fund.manager else '' -}}
+                            </textarea>
+                        </div>
+                        {% if is_edit and fund.manager %}
+                        <input type="hidden" name="manager_id" value="{{ fund.manager.id }}">
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="admin_bottom">
+                    <a href="{{ url_for('admin.funds_admin') }}" class="back-btn">← Назад</a>
+                    <button type="submit" class="submit-btn">
+                        {% if is_edit %}Сохранить изменения{% else %}Создать фонд{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+// Глобальные счетчики
+let conditionCounter = {{ fund.conditions|length if is_edit and fund.conditions else 1 }};
+let stepCounter = {{ fund.steps|length if is_edit and fund.steps else 1 }};
+let conditionIndex = conditionCounter;
+let stepIndex = stepCounter;
+
+// Массивы для удаленных элементов
+let deletedConditionIds = [];
+let deletedStepIds = [];
+
+// Функция для добавления нового условия
+function addCondition() {
+    const container = document.getElementById('conditions-container');
+    const blocks = container.querySelectorAll('.dynamic-block');
+    const newIndex = blocks.length;
+    
+    const newCondition = document.createElement('div');
+    newCondition.className = 'dynamic-block';
+    
+    newCondition.innerHTML = `
+        <div class="dynamic-block-header">
+            <span class="dynamic-block-title">Дополнительное условие</span>
+            <button type="button" class="remove-btn" onclick="removeCondition(this)">×</button>
+        </div>
+        <div class="condition-item">
+            <div class="condition-header">
+                <div class="condition-title-input form-group">
+                    <label>Заголовок:</label>
+                    <input type="text" name="conditions_title[]" required>
+                    <div class="invalid-feedback">Укажите заголовок</div>
+                </div>
+                <div class="condition-order-input form-group">
+                    <label>Порядок:</label>
+                    <input type="number" name="conditions_order[]" value="${newIndex + 1}" min="1">
+                </div>
+            </div>
+            <div class="condition-description form-group">
+                <label>Описание:</label>
+                <textarea name="conditions_description[]" required rows="3"></textarea>
+                <div class="invalid-feedback">Укажите описание</div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newCondition);
+}
+
+// Функция для удаления условия
+function removeCondition(button) {
+    const container = document.getElementById('conditions-container');
+    const blocks = container.querySelectorAll('.dynamic-block');
+    
+    // Не позволяем удалить первый блок
+    if (blocks.length > 1) {
+        button.closest('.dynamic-block').remove();
+    }
+}
+
+// Функция для добавления нового шага
+function addStep() {
+    const container = document.getElementById('steps-container');
+    const blocks = container.querySelectorAll('.dynamic-block');
+    const newIndex = blocks.length;
+    
+    const newStep = document.createElement('div');
+    newStep.className = 'dynamic-block';
+    
+    newStep.innerHTML = `
+        <div class="dynamic-block-header">
+            <span class="dynamic-block-title">Дополнительный шаг</span>
+            <button type="button" class="remove-btn" onclick="removeStep(this)">×</button>
+        </div>
+        <div class="step-item">
+            <div class="step-header">
+                <div class="step-title-input form-group">
+                    <label>Заголовок:</label>
+                    <input type="text" name="steps_title[]" required>
+                    <div class="invalid-feedback">Укажите заголовок</div>
+                </div>
+                <div class="step-time-input form-group">
+                    <label>Время:</label>
+                    <input type="text" name="steps_time[]" placeholder="5 минут">
+                </div>
+                <div class="step-order-input form-group">
+                    <label>Порядок:</label>
+                    <input type="number" name="steps_order[]" value="${newIndex + 1}" min="1">
+                </div>
+            </div>
+            <div class="step-description form-group">
+                <label>Описание:</label>
+                <textarea name="steps_description[]" required rows="3"></textarea>
+                <div class="invalid-feedback">Укажите описание</div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newStep);
+}
+
+// Функция для удаления шага
+function removeStep(button) {
+    const container = document.getElementById('steps-container');
+    const blocks = container.querySelectorAll('.dynamic-block');
+    
+    // Не позволяем удалить первый блок
+    if (blocks.length > 1) {
+        button.closest('.dynamic-block').remove();
+    }
+}
+
+// Настройка предпросмотра для фото управляющего
+function setupManagerPhotoPreview() {
+    const fileInput = document.getElementById('managers_photo');
+    const preview = document.getElementById('manager_preview');
+    const fileName = document.querySelector('#managers_photo ~ .file-name');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.querySelector('img').src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                fileName.textContent = 'Файл не выбран';
+                preview.style.display = 'none';
+            }
+        });
+        
+        // Настройка клика по кнопке
+        const button = fileInput.previousElementSibling;
+        button.addEventListener('click', function() {
+            fileInput.click();
+        });
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    
+    // Базовая валидация формы
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+    
+    // Обработка выбора файлов и предпросмотр для основных изображений
+    function setupFileInput(fileInputId, previewId, fileNameSpan) {
+        const fileInput = document.getElementById(fileInputId);
+        const preview = document.getElementById(previewId);
+        const fileName = document.querySelector(fileNameSpan);
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    fileName.textContent = file.name;
+                    
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.querySelector('img').src = e.target.result;
+                            preview.style.display = 'block';
+                            
+                            if (fileInputId === 'background_image') {
+                                document.body.style.backgroundImage = `url(${e.target.result})`;
+                                document.body.style.backgroundSize = '100%';
+                                document.body.style.backgroundRepeat = "no-repeat";
+                            }
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    fileName.textContent = 'Файл не выбран';
+                    preview.style.display = 'none';
+                    
+                    if (fileInputId === 'background_image') {
+                        document.body.style.backgroundImage = '';
+                    }
+                }
+            });
+        }
+    }
+    
+    // Настройка обработчиков для файловых инпутов
+    setupFileInput('background_image', 'background_preview', '#background_image ~ .file-name');
+    setupFileInput('logo', 'logo_preview', '#logo ~ .file-name');
+    setupManagerPhotoPreview();
+    
+    // Клик по кнопке выбора файла
+    document.querySelectorAll('.file-input-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const fileInput = this.nextElementSibling;
+            if (fileInput) {
+                fileInput.click();
+            }
+        });
+    });
+    
+    // УБРАТЬ JavaScript заполнение полей, так как теперь они заполняются в HTML
+    // Здесь не должно быть кода для заполнения conditions_title_0 и steps_title_0
+});
+
+{% if is_edit %}
+// Получаем данные из сервера (исключая текущий фонд)
+const existingNames = {{ existing_names | tojson }};
+const existingUrls = {{ existing_urls | tojson }};
+const currentFundName = "{{ fund.name }}";
+const currentFundUrl = "{{ fund.url_name }}";
+
+// Проверка названия фонда (исключая текущий)
+function checkFundName() {
+    const nameInput = document.getElementById('name');
+    const nameError = document.getElementById('nameError');
+    const name = nameInput.value.trim();
+    
+    if (name && name !== currentFundName && existingNames.includes(name)) {
+        nameError.style.display = 'block';
+        nameInput.classList.add('is-invalid');
+    } else {
+        nameError.style.display = 'none';
+        nameInput.classList.remove('is-invalid');
+    }
+}
+
+// Проверка URL названия фонда (исключая текущий)
+function checkFundUrl() {
+    const urlInput = document.getElementById('url_name');
+    const urlError = document.getElementById('urlError');
+    const url = urlInput.value.trim();
+    
+    if (url && url !== currentFundUrl && existingUrls.includes(url)) {
+        urlError.style.display = 'block';
+        urlInput.classList.add('is-invalid');
+    } else {
+        urlError.style.display = 'none';
+        urlInput.classList.remove('is-invalid');
+    }
+}
+
+// Валидация при отправке формы
+function validateFundForm() {
+    const nameInput = document.getElementById('name');
+    const urlInput = document.getElementById('url_name');
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    
+    let isValid = true;
+    
+    // Проверка названия (исключая текущий)
+    if (name !== currentFundName && existingNames.includes(name)) {
+        document.getElementById('nameError').style.display = 'block';
+        nameInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Проверка URL (исключая текущий)
+    if (url !== currentFundUrl && existingUrls.includes(url)) {
+        document.getElementById('urlError').style.display = 'block';
+        urlInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Вешаем обработчики на инпуты
+document.getElementById('name').addEventListener('input', checkFundName);
+document.getElementById('url_name').addEventListener('input', checkFundUrl);
+
+// Вешаем валидацию на форму
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!validateFundForm()) {
+        e.preventDefault();
+    }
+});
+{% else %}
+// Для создания - обычная проверка
+const existingNames = {{ existing_names | tojson }};
+const existingUrls = {{ existing_urls | tojson }};
+
+// Проверка названия фонда
+function checkFundName() {
+    const nameInput = document.getElementById('name');
+    const nameError = document.getElementById('nameError');
+    const name = nameInput.value.trim();
+    
+    if (name && existingNames.includes(name)) {
+        nameError.style.display = 'block';
+        nameInput.classList.add('is-invalid');
+    } else {
+        nameError.style.display = 'none';
+        nameInput.classList.remove('is-invalid');
+    }
+}
+
+// Проверка URL названия фонда
+function checkFundUrl() {
+    const urlInput = document.getElementById('url_name');
+    const urlError = document.getElementById('urlError');
+    const url = urlInput.value.trim();
+    
+    if (url && existingUrls.includes(url)) {
+        urlError.style.display = 'block';
+        urlInput.classList.add('is-invalid');
+    } else {
+        urlError.style.display = 'none';
+        urlInput.classList.remove('is-invalid');
+    }
+}
+
+// Валидация при отправке формы
+function validateFundForm() {
+    const nameInput = document.getElementById('name');
+    const urlInput = document.getElementById('url_name');
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    
+    let isValid = true;
+    
+    // Проверка названия
+    if (existingNames.includes(name)) {
+        document.getElementById('nameError').style.display = 'block';
+        nameInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    // Проверка URL
+    if (existingUrls.includes(url)) {
+        document.getElementById('urlError').style.display = 'block';
+        urlInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Вешаем обработчики на инпуты
+document.getElementById('name').addEventListener('input', checkFundName);
+document.getElementById('url_name').addEventListener('input', checkFundUrl);
+{% endif %}
+</script>
+{% endblock %}

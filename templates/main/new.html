@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news.title }}{% endblock %}
+
+{% block style %}
+<style>
+:root {
+    --primary: #000f9f;
+    --primary-light: rgba(0, 15, 159, 0.1);
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --surface: #f8fafc;
+    --background: #ffffff;
+}
+
+body {
+    margin-top: 100px;
+}
+
+.container {
+    max-width: 800px;
+    padding: 0 1.5rem;
+    margin: 0 auto;
+}
+
+/* Кнопка назад */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: var(--background);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: translateX(-4px);
+}
+
+/* Шапка новости */
+.news-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.news-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.news-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.news-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Обложка новости */
+.news-cover {
+    margin-bottom: 3rem;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.news-cover img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.news-cover:hover img {
+    transform: scale(1.02);
+}
+
+/* Контент новости */
+.news-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.news-content > * {
+    margin-bottom: 2rem;
+}
+
+.news-content p {
+    margin-bottom: 1.5rem;
+}
+
+.news-content h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 3rem 0 1.5rem;
+    color: var(--text);
+}
+
+.news-content h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 2.5rem 0 1.25rem;
+    color: var(--text);
+}
+
+.news-content ul, 
+.news-content ol {
+    padding-left: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.news-content li {
+    margin-bottom: 0.5rem;
+}
+
+.news-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--text-light);
+}
+
+/* Изображения в контенте */
+.news-image {
+    margin: 3rem auto;
+    max-width: 100%;
+    text-align: center;
+}
+
+.news-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: block;
+    margin: 0 auto;
+}
+
+.news-image .caption {
+    margin-top: 1rem;
+    font-size: 14px;
+    color: var(--text-light);
+    text-align: center;
+    font-style: italic;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Горизонтальные изображения */
+.news-image.horizontal img {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Вертикальные изображения */
+.news-image.vertical img {
+    max-height: 600px;
+    object-fit: contain;
+}
+
+/* Код/цитаты */
+.code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+}
+
+/* Разделитель */
+.content-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 3rem 0;
+    opacity: 0.5;
+}
+
+/* Футер новости */
+.news-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    body {
+        margin-top: 140px;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .news-title {
+        font-size: 14px;
+    }
+    
+    .news-cover img {
+        height: 250px;
+    }
+    
+    .news-content {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+    
+    .news-content h2 {
+        font-size: 14px;
+    }
+    
+    .news-content h3 {
+        font-size: 14px;
+    }
+    
+    .back-button {
+        padding: 0.625rem 1.25rem;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-title {
+        font-size: 14px;
+    }
+    
+    .news-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/about_company/news">Новости компании</a></li>
+        <li>{{ news.title|truncate(30) }}</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <!-- Шапка новости -->
+    <div class="news-header">
+        <h1 class="header6">{{ news.title }}</h1>
+        <div class="news-meta">
+            <div class="news-date">
+                <span>{{ news.news_date.strftime('%d.%m.%Y') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Обложка новости -->
+    {% if news.cover_image %}
+    <div class="news-cover">
+        <img src="data:{{ news.cover_mimetype }};base64,{{ news.cover_image|b64encode }}" 
+             alt="{{ news.title }}">
+    </div>
+    {% endif %}
+
+    <!-- Контент новости -->
+    <article class="news-content">
+        {% for block in blocks %}
+            {% if block.block_type == 'text' %}
+                <div class="news-text">
+                    {{ block.content|safe }}
+                </div>
+            
+            {% elif block.block_type == 'image' and block.image_data %}
+                <div class="news-image {% if block.content %}has-caption{% endif %}">
+                    <img src="data:{{ block.mimetype }};base64,{{ block.image_data|b64encode }}" 
+                         alt="{% if block.content %}{{ block.content }}{% else %}Изображение в новости{% endif %}"
+                         loading="lazy">
+                    
+                    {% if block.content %}
+                    <div class="caption">
+                        {{ block.content }}
+                    </div>
+                    {% endif %}
+                </div>
+            
+            {% elif block.block_type == 'divider' %}
+                <div class="content-divider"></div>
+            
+            {% elif block.block_type == 'quote' %}
+                <blockquote>
+                    {{ block.content|safe }}
+                </blockquote>
+            
+            {% elif block.block_type == 'code' %}
+                <pre class="code-block"><code>{{ block.content }}</code></pre>
+            
+            {% else %}
+                <div class="content-block">
+                    {{ block.content|safe }}
+                </div>
+            {% endif %}
+        
+        {% else %}
+            <div class="empty-content">
+                <p>Контент новости пока не добавлен.</p>
+            </div>
+        {% endfor %}
+    </article>
+
+    <!-- Футер новости -->
+    <div class="news-footer">
+        <a href="{{ url_for('news_list') }}" class="back-button">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Смотреть другие новости
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическое определение типа изображения
+    const newsImages = document.querySelectorAll('.news-image img');
+    
+    newsImages.forEach(img => {
+        // Добавляем обработчик загрузки
+        const handleImageLoad = function() {
+            const width = this.naturalWidth;
+            const height = this.naturalHeight;
+            const container = this.closest('.news-image');
+            
+            // Определяем тип изображения
+            if (height > width * 1.5) {
+                // Вертикальное
+                container.classList.add('vertical');
+            } else if (width > height * 1.5) {
+                // Горизонтальное
+                container.classList.add('horizontal');
+            }
+            // Квадратные остаются без дополнительных классов
+        };
+        
+        // Если изображение уже загружено
+        if (img.complete) {
+            handleImageLoad.call(img);
+        } else {
+            img.addEventListener('load', handleImageLoad);
+        }
+    });
+    
+    // Плавное появление изображений
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    // Применяем к всем изображениям в контенте
+    document.querySelectorAll('.news-image img').forEach(img => {
+        img.style.opacity = '0';
+        img.style.transform = 'translateY(10px)';
+        img.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        imageObserver.observe(img);
+    });
+});
+</script>
+{% endblock %}

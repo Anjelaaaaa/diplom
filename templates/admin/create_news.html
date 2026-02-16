@@ -1,0 +1,459 @@
+{% extends "base_admin.html" %}
+
+{% block style %} 
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .current-image {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+        margin-bottom: 15px;
+        max-width: 250px;
+        max-height: 250px;
+    }
+    .news-header {
+        color: rgb(63, 63, 63);
+        padding: 24px;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+    }
+    .image-preview {
+        margin-top: 10px;
+        max-width: 250px;
+        max-height: 250px;
+        border: 1px dashed #d4d4d4;
+        padding: 10px;
+        text-align: center;
+        border-radius: 5px;
+        display: none;
+    }
+    
+    .image-preview img {
+        max-width: 250px;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+    }
+    .news-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        font-size: 18px;
+        color: #000f9f;
+        background-color: white;
+        border: 1px solid #000f9f;
+        width: 30px;
+        height: 30px;
+    }
+    .news-card {
+        background: rgb(248, 249, 250);
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+    .new-news-card {
+        border-left: 4px solid #000f9f;
+    }
+    /* Стили для загрузки файлов как в примере с фондами */
+    .file-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    .file-input-button {
+        background: #000f9f;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .file-name {
+        color: #6c757d;
+        font-style: italic;
+    }
+    .form-control-file {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        cursor: pointer;
+    }
+    .current-file-info {
+        font-size: 0.875rem;
+        margin-top: 5px;
+        color: #6c757d;
+    }
+
+    /* Стили для обложки из последнего варианта */
+    .cover-section {
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        border: 2px solid #e6e9ff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .cover-section label {
+        color: #000f9f;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .cover-section .file-input-button {
+        background: linear-gradient(135deg, #000f9f 0%, #0018cc 100%);
+        box-shadow: 0 2px 8px rgba(0, 15, 159, 0.2);
+    }
+
+    /* Стили для добавляющихся блоков из последнего варианта */
+    .new-block {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Единый размер для всех изображений */
+    .current-image img,
+    .image-preview img,
+    #cover_preview img {
+        max-width: 250px;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .btn-primary {
+        background: #000f9f;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        color: white;
+    }
+    
+    .admin_bottom {
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .admin_bottom .d-flex {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-success {
+        background: #000f9f;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        color: white;
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #cbd5e0;
+        color: #4a5568;
+        background: transparent;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    .styled-textarea {
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        transition: border-color 0.2s ease;
+    }
+    
+    .styled-textarea:focus {
+        border-color: #000f9f;
+        box-shadow: 0 0 0 0.2rem rgba(0, 15, 159, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">Создание новости</div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Основные поля формы -->
+                <div class="form-group">
+                    <label for="news_date">Дата новости:</label>
+                    <input type="date" name="news_date" id="news_date" class="form-control" required 
+                        value="{{ current_date }}">
+                    <div class="invalid-feedback">Пожалуйста, укажите дату новости.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Заголовок новости:</label>
+                    <input type="text" name="title" id="title" class="form-control" required 
+                        placeholder="Введите заголовок новости">
+                    <div class="invalid-feedback">Пожалуйста, укажите заголовок новости.</div>
+                </div>
+
+                <!-- Обложка новости -->
+                <div class="form-group cover-section">
+                    <label for="cover_image">Обложка новости</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="cover_image" name="cover_image" 
+                            class="form-control-file" accept="image/*" required>
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                        <div class="invalid-feedback">Пожалуйста, выберите обложку новости</div>
+                    </div>
+                    <small class="form-text text-muted">Выберите изображение для обложки новости</small>
+                    <div class="image-preview" id="cover_preview">
+                        <img src="" alt="Предпросмотр обложки">
+                    </div>
+                </div>
+
+                <!-- Блоки контента -->
+                <div class="form-group">
+                    <label>Содержание новости:</label>
+                    <div id="content-blocks">
+                        <!-- Первый текстовый блок (без кнопки удаления) -->
+                        <div class="content-block" id="block_0">
+                            <div class="news-card mb-3">
+                                <div class="news-header d-flex justify-content-between align-items-center">
+                                    <span>Основной текст новости</span>
+                                </div>
+                                <div class="card-body">
+                                    <input type="hidden" name="block_0_type" value="text">
+                                    <div class="form-group">
+                                        <textarea name="block_0_text" class="form-control styled-textarea" rows="4" 
+                                            placeholder="Введите основной текст новости..." required></textarea>
+                                        <div class="invalid-feedback">Пожалуйста, заполните основной текст новости</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="addTextBlock()">
+                            + Добавить текстовый блок
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="addImageBlock()">
+                            + Добавить изображение
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin_bottom">
+                    <div class="d-flex">
+                        <a href="{{ url_for('admin.news_admin') }}" class="btn btn-outline-secondary">
+                            ← Назад
+                        </a>
+                        <button type="submit" class="btn btn-success">Создать новость</button>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="block_count" id="block_count" value="1">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        
+        // Валидация формы
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Обработка обложки
+        const coverInput = document.getElementById('cover_image');
+        const coverPreview = document.getElementById('cover_preview');
+        const coverFileName = coverInput.nextElementSibling.nextElementSibling;
+        
+        coverInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                coverFileName.textContent = file.name;
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        coverPreview.querySelector('img').src = e.target.result;
+                        coverPreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                coverFileName.textContent = 'Файл не выбран';
+                coverPreview.style.display = 'none';
+            }
+        });
+        
+        // Клик по кнопке выбора файла
+        document.querySelectorAll('.file-input-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const fileInput = this.nextElementSibling;
+                fileInput.click();
+            });
+        });
+    });
+
+    let blockCounter = 1;
+
+    // Добавление текстового блока
+    function addTextBlock() {
+        const blockId = blockCounter++;
+        const blockHtml = `
+            <div class="content-block new-block" id="block_${blockId}">
+                <div class="news-card mb-3 new-news-card">
+                    <div class="news-header d-flex justify-content-between align-items-center">
+                        <span>Дополнительный текстовый блок</span>
+                        <button type="button" class="news-btn" onclick="removeBlock(${blockId})">
+                            × 
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" name="block_${blockId}_type" value="text">
+                        <div class="form-group">
+                            <textarea name="block_${blockId}_text" class="form-control styled-textarea" rows="4" 
+                                placeholder="Введите текст блока..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('content-blocks').insertAdjacentHTML('beforeend', blockHtml);
+        document.getElementById('block_count').value = blockCounter;
+    }
+
+    // Добавление блока с изображением
+    function addImageBlock() {
+        const blockId = blockCounter++;
+        const blockHtml = `
+            <div class="content-block new-block" id="block_${blockId}">
+                <div class="news-card mb-3 new-news-card">
+                    <div class="news-header d-flex justify-content-between align-items-center">
+                        <span>Блок с изображением</span>
+                        <button type="button" class="news-btn" onclick="removeBlock(${blockId})">
+                            × 
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" name="block_${blockId}_type" value="image">
+                        
+                        <div class="form-group">
+                            <label>Изображение:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" name="block_${blockId}_image" 
+                                    class="form-control-file" accept="image/*" required>
+                                <button type="button" class="file-input-button">Выберите изображение</button>
+                                <span class="file-name">Файл не выбран</span>
+                                <div class="invalid-feedback">Пожалуйста, выберите изображение</div>
+                            </div>
+                            <div class="image-preview mt-2" id="image_preview_${blockId}" style="display: none;">
+                                <img src="" alt="Предпросмотр">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('content-blocks').insertAdjacentHTML('beforeend', blockHtml);
+        document.getElementById('block_count').value = blockCounter;
+        
+        // Настройка предпросмотра для нового блока
+        const fileInput = document.querySelector(`input[name="block_${blockId}_image"]`);
+        const preview = document.getElementById(`image_preview_${blockId}`);
+        const fileName = fileInput.nextElementSibling.nextElementSibling;
+
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.querySelector('img').src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                fileName.textContent = 'Файл не выбран';
+                preview.style.display = 'none';
+            }
+        });
+
+        // Клик по кнопке выбора файла для нового блока
+        const fileButton = fileInput.previousElementSibling;
+        fileButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+    }
+
+    // Удаление блока
+    function removeBlock(blockId) {
+        const block = document.getElementById(`block_${blockId}`);
+        if (block) {
+            block.remove();
+        }
+    }
+</script>
+{% endblock %}

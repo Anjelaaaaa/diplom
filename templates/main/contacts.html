@@ -1,0 +1,954 @@
+{% extends "base.html" %}
+
+{% block title %} Alenka-Capital {% endblock %}
+
+{% block style %}
+<style>
+    body {
+        margin-top: 100px;
+    }
+    .container {
+        height: 390px;
+        overflow: hidden;
+    }
+    #container {
+        height: 400px;
+        min-width: 300px; 
+        margin-top: 5px;
+    }
+    .tab {
+        font-size: 14px;
+        padding: 10px 20px;
+        box-shadow: 0 0 13px rgba(102, 102, 102, 0.16);
+        border-radius: 5px;
+        margin-right: -4px;
+        cursor: pointer;
+        display: inline-block;
+        background-color: #ffffff;
+        margin-bottom: 15px;
+    }
+    .active-graph {
+        background-color: #f5f5f5;
+        box-shadow: 0 0 7px rgba(57, 62, 87, 0.16);
+    }
+    .graph-botton {
+        margin-left: 7px;
+    }
+    .benchmark {
+        margin-left: 7px;
+    }
+    .recommend {
+        display: inline-block;          
+        position: relative;
+    }
+    .tooltip-icon {
+        font-size: 10px;
+        font-weight: bold;
+        color: #000f9f;
+        text-align: center;
+        cursor: pointer;
+        display: inline-block;
+    }
+    .tooltip {
+        display: none;
+        position: absolute;
+        left: 240px;
+        top: 20px;
+        background-color: rgb(255, 255, 255);
+        font-size: 12px;
+        color: rgb(65, 65, 65);
+        padding: 5px 10px;
+        border-radius: 5px;
+        z-index: 10;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.075);
+        line-height: 17px;
+        width: 180px;
+    }
+    .tooltip-icon:hover + .tooltip {
+        display: block;
+    }
+    @media (max-width: 991px) {
+        body {
+            margin-top: 70px;
+        }
+    }
+    @media (max-width: 530px) {
+        .tooltip {
+            left: 10px;
+            top: 20px;
+        }
+    }
+    .returns-table-container {
+        overflow-x: auto;
+    }
+    .returns-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 14px;
+    }
+    .returns-table th, .returns-table td {
+        padding: 8px 12px;
+        text-align: center;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .returns-table th {
+        font-weight: normal;
+    }
+    .returns-table .row-label {
+        text-align: left;
+    }
+    .positive-return:after {
+        content: " ↑";
+        color: #28a745;
+    }
+    .negative-return:after {
+        content: " ↓";
+        color: #dc3545;
+    }
+    .update-date {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+        text-align: right;
+    }
+    .calculator-container {
+        font-size: 14px;
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 0 25px rgba(102, 102, 102, 0.075);
+        margin-bottom: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .calculator-controls {
+        flex: 1;
+        min-width: 150px;
+        margin-top: 20px;
+    }
+    .result-container {
+        flex: 1;
+        min-width: 150px;
+        margin-top: 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #000f9f;
+    }
+    @media (max-width: 768px) {
+        .calculator-container {
+            flex-direction: column;
+        }
+        .result-container {
+            order: 1;
+        }
+        .calculator-controls {
+            order: 0;
+        }
+    }
+    input[type="range"] {
+        width: 100%;
+        height: 8px;
+        -webkit-appearance: none;
+        background: #e0e0e0;
+        border-radius: 4px;
+        outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #000f9f;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    .input-calculator {
+        border: 0;
+        font-size: 14px;
+        display: none;
+    }
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8em;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    #investment-amount {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, #000f9f 0%, #000f9f var(--fill-percent), #e0e0e0 var(--fill-percent), #e0e0e0 100%);
+        border-radius: 4px;
+        outline: none;
+        margin: 0px 0;
+    }
+    #investment-date {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, #000f9f 0%, #000f9f var(--fill-percent), #e0e0e0 var(--fill-percent), #e0e0e0 100%);
+        border-radius: 4px;
+        outline: none;
+        margin: 0px 0;
+    }
+    #investment-amount::-webkit-slider-thumb,
+    #investment-date::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 19px;
+        height: 19px;
+        background: #000f9f;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    #result-total {
+        color: #000f9f;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .result-value {
+
+    }
+    .result-disclaimer {
+        margin-top: 15px;
+        color: #6c757d;
+        font-size: 12px;
+        line-height: 17px;
+    }
+    #charts-wrapper {
+        width: 100%;
+        overflow: hidden;
+        height: 480px;
+    }
+    .charts-container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        height: 490px; 
+    }
+    .chart-container {
+        box-sizing: border-box;
+        min-height: 470px;
+        overflow: visible;
+    }
+    .chart-wrapper {
+        height: 490px; 
+    }
+    @media (max-width: 1200px) {
+        #charts-wrapper {
+            height: auto;
+            overflow: visible; 
+        }
+        .charts-container {
+            flex-direction: column;
+            height: auto; 
+        }    
+        .chart-container {
+            width: 100% !important;
+            min-height: 400px;
+            overflow: hidden; 
+            position: relative; 
+        }
+        .chart-container .highcharts-container {
+            height: 450px !important;
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 100% !important;
+        }
+    }
+    @media (max-width: 500px) {
+        .chart-container {
+            min-height: 300px; 
+        }
+        .chart-container .highcharts-container {
+            height: 350px !important; 
+            top: 15px; 
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+        <h2 class="header1 center">График стоимости пая и СЧА</h2>
+
+        <div class="graph-botton">
+            <div class="tab active-graph" id="tab-pai">Стоимость инвестиционного пая</div>
+            <div class="tab" id="tab-scha">Стоимость чистых активов</div>
+        </div>
+
+        <div>
+            <div class="benchmark">
+                <div class="recommend">
+                    <div class="recommend-title">
+                        <label>
+                            <input type="checkbox" id="benchmark-toggle"> Сравнить с бенчмарком
+                        </label>
+                        <sup class="tooltip-icon">?</sup>
+                        <div class="tooltip">
+                            Бенчмарк - это индикатор, значение которого служит ориентиром
+                            (эталоном) для оценки эффективности инвестиционной стратегии.
+                            Чем прирост стоимости инвестиционного пая выше прироста бенчмарка,
+                            тем больше фонд "обыгрывает" рынок.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3>Прирост за выбранный период: <span id="growth-percentage"></span>%</h3>
+        </div>
+
+
+        <div class="container">
+            <div id="container"></div>
+        </div>
+
+        <div class="returns-table-container">
+            <table class="returns-table">
+                <thead>
+                    <tr>
+                        <th class="row-label">Период (данные на {{ current_date }})</th>
+                        <th>День</th>
+                        <th>Неделя</th>
+                        <th>Месяц</th>
+                        <th>6 мес.</th>
+                        <th>Год</th>
+                        <th>5 лет</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-label">Пай</td>
+                        <td class="{% if returns['день'] is not none %}{% if returns['день'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['день'] is not none %}{{ "%.2f"|format(returns['день']) }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="{% if returns['неделя'] is not none %}{% if returns['неделя'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['неделя'] is not none %}{{ "%.2f"|format(returns['неделя']) }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="{% if returns['месяц'] is not none %}{% if returns['месяц'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['месяц'] is not none %}{{ "%.2f"|format(returns['месяц']) }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="{% if returns['6 месяцев'] is not none %}{% if returns['6 месяцев'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['6 месяцев'] is not none %}{{ "%.2f"|format(returns['6 месяцев']) }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="{% if returns['год'] is not none %}{% if returns['год'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['год'] is not none %}{{ "%.2f"|format(returns['год']) }}%{% else %}—{% endif %}
+                        </td>
+                        <td class="{% if returns['5 лет'] is not none %}{% if returns['5 лет'] >= 0 %}positive-return{% else %}negative-return{% endif %}{% endif %}">
+                            {% if returns['5 лет'] is not none %}{{ "%.2f"|format(returns['5 лет']) }}%{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <h2 class="header1 center">Калькулятор исторической доходности</h2>
+        
+        <div class="calculator-container" id="calculator">
+            <div class="calculator-controls">
+                <div class="form-group">
+                    <label for="investment-amount" class="result-value">Если бы я инвестировал <span id="result-amount">{{ "{:,}".format(default_amount|default(100000)).replace(",", " ") }}</span> руб.</label>
+                        <input class="input-calculator" type="text" id="amount-display" 
+                               value="{{ default_amount }}" 
+                               class="form-control"
+                               min="{{ min_investment }}"
+                               max="{{ max_investment }}">
+                    <input type="range" id="investment-amount" 
+                           min="{{ min_investment }}" 
+                           max="{{ max_investment }}"
+                           step="1000" 
+                           value="{{ default_amount }}" 
+                           class="form-control">
+                    <div class="range-labels">
+                        <span>{{ "{:,}".format(min_investment).replace(",", " ") }}</span>
+                        <span>{{ "{:,}".format(max_investment).replace(",", " ") }}+</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="investment-date">Дата начала инвестиций <span id="result-invest-date">{{ date_display_js[-30] }}</span></label>
+                    <input class="input-calculator" type="text" id="date-display" 
+                            class="form-control" 
+                            value="{{ date_display_js[-30] }}" 
+                            readonly>
+                    <input type="hidden" id="calc-date" 
+                            value="{{ date_options_js[-30] }}">
+                    <input type="range" id="investment-date" 
+                           min="0" 
+                           max="{{ date_options|length - 1 }}" 
+                           value="{{ date_options|length - 30 }}" 
+                           class="form-control">
+                    <div class="range-labels">
+                        <span>{{ date_options[0].strftime('%d.%m.%Y') }}</span>
+                        <span>{{ date_options[-1].strftime('%d.%m.%Y') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-container mt-4">
+                <div class="result-value">
+                    Мой портфель на <span id="result-current-date"></span> составил бы:
+                </div>
+                <h3 id="result-total">0 руб.</h3>
+                
+                <div class="result-disclaimer">
+                    <i class="fas fa-question-circle"></i> Прирост на основе стоимости инвестиционного пая с <span id="result-start-date">{{ date_display_js[-30] }}</span> г. по {{ date_options[-1].strftime('%d.%m.%Y') }} с учетом вознаграждений УК и прочих расходов, но без учета НДФЛ и скидок (надбавок), взимаемых при погашении (приобретении) инвестиционных паев)
+                </div>
+            </div>
+        </div>
+
+        <div id="charts-wrapper"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <script>
+        (async () => {
+            // Используйте chartData из вашего шаблона
+            var shareData = JSON.parse('{{ share_data | safe }}'); // Данные для пая
+            var share_growth_data = JSON.parse('{{ share_growth_data | safe }}'); // Данные для бенчмарка
+            var benchmark_data = JSON.parse('{{ benchmark_data | safe }}'); // Данные для СЧА
+            var benchmark_growth_data = JSON.parse('{{ benchmark_growth_data | safe }}'); // Данные для СЧА
+            var schaData = JSON.parse('{{ scha_data | safe }}'); // Данные для СЧА
+
+            let globalShareData = shareData; // или присвоить после получения данных
+            let currentMode = 'пай'; // по умолчанию
+
+            // Функция для генерации цветов с прозрачностью
+            function generateTransparentColors(baseColor, count) {
+                const colors = [];
+                const baseRgb = {
+                    r: parseInt(baseColor.substr(1, 2), 16),
+                    g: parseInt(baseColor.substr(3, 2), 16),
+                    b: parseInt(baseColor.substr(5, 2), 16)
+                };
+                
+                for (let i = 0; i < count; i++) {
+                    const opacity = 1 - (i * (0.9 / (count - 1)));
+                    const color = `rgba(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}, ${opacity.toFixed(2)})`;
+                    colors.push(color);
+                }
+                
+                return colors;
+            }
+
+            // Проверка на мобильное устройство
+            function isMobileView() {
+                return window.innerWidth <= 768;
+            }
+
+            // Общие настройки для обеих диаграмм
+            const commonSettings = {
+                lang: {
+                    contextButtonTitle: "",
+                    loading: "Обработка данных...",
+                    noData: "Нет данных",
+                    viewFullscreen: 'Открыть на весь экран',
+                    printChart: 'Распечатать график',
+                    downloadPNG: 'Загрузить в формате PNG',
+                    downloadJPEG: 'Загрузить в формате JPEG',
+                    downloadSVG: 'Загрузить в формате SVG',
+                    downloadCSV: 'Загрузить в формате CSV',
+                    downloadXLS: 'Загрузить в формате XLS',
+                    exitFullscreen: 'Выйти из полноэкранного режима',
+                    decimalPoint: ',',
+                    thousandsSep: ' '
+                },
+                exporting: {
+                    buttons: {
+                        contextButton: {
+                            menuItems: ['viewFullscreen', 'printChart', 'separator', 'downloadPNG', 'downloadJPEG', 'downloadSVG', 'separator', 'downloadCSV', 'downloadXLS']
+                        }
+                    }
+                },
+                chart: {
+                    type: 'pie',
+                    style: {
+                        fontFamily: 'Montserrat'
+                    },
+                    events: {
+                        render() {
+                            const chart = this;
+                            const centerText = chart.options.centerText || 'Текст по центру';
+                            
+                            if (!chart.centerLabel) {
+                                chart.centerLabel = chart.renderer.label(centerText)
+                                    .css({
+                                        color: '#000',
+                                        textAnchor: 'middle',
+                                        fontSize: '16px'
+                                    })
+                                    .attr({
+                                        zIndex: 5
+                                    })
+                                    .add();
+                            }
+
+                            const center = chart.series[0].center;
+                            chart.centerLabel.attr({
+                                x: center[0] + chart.plotLeft,
+                                y: center[1] + chart.plotTop - (chart.centerLabel.getBBox().height / 2)
+                            });
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                legend: {
+                    enabled: false
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        borderRadius: 5,
+                        showInLegend: false,
+                        size: '60%', // Уменьшаем размер для места под подписи
+                        dataLabels: {
+                            enabled: !isMobileView(),
+                            distance: 20,
+                            format: '{point.name}',
+                            style: {
+                                color: '#333333',
+                                fontWeight: '300',
+                                textOutline: 'none',
+                                fontSize: '12px'
+                            },
+                            connectorWidth: 1
+                        }
+                    }
+                }
+            };
+
+            // Создание контейнера
+            const chartsContainer = document.createElement('div');
+            chartsContainer.className = 'charts-container';
+            document.getElementById('charts-wrapper').appendChild(chartsContainer);
+
+            // Создание контейнеров для диаграмм
+            const issuerChartDiv = document.createElement('div');
+            issuerChartDiv.className = 'chart-container';
+            chartsContainer.appendChild(issuerChartDiv);
+
+            const sectorChartDiv = document.createElement('div');
+            sectorChartDiv.className = 'chart-container';
+            chartsContainer.appendChild(sectorChartDiv);
+
+            // Диаграмма по эмитентам
+            Highcharts.chart(issuerChartDiv, Highcharts.merge(commonSettings, {
+                centerText: 'Эмитенты',
+                colors: generateTransparentColors('#000f9f', {{ issuer_data|safe }}.length),
+                title: {
+                    text: '',
+                },
+                series: [{
+                    name: 'Доля',
+                    colorByPoint: true,
+                    innerSize: '50%',
+                    data: {{ issuer_data|safe }}
+                }]
+            }));
+
+            // Диаграмма по секторам
+            Highcharts.chart(sectorChartDiv, Highcharts.merge(commonSettings, {
+                centerText: 'Сектора',
+                colors: generateTransparentColors('#000f9f', {{ sector_data|safe }}.length),
+                title: {
+                    text: '',
+                },
+                series: [{
+                    name: 'Доля',
+                    colorByPoint: true,
+                    innerSize: '75%',
+                    data: {{ sector_data|safe }}
+                }]
+            }));
+
+            // Обработчик изменения размера окна
+            function handleResize() {
+                const width = window.innerWidth;
+                const isMidRange = width >= 1200 && width <= 1700;
+                const isMobile = width <= 768;
+
+                // Для среднего диапазона
+                if (isMidRange) {
+                    Highcharts.charts.forEach(chart => {
+                        if (chart) {
+                            chart.update({
+                                plotOptions: {
+                                    pie: { 
+                                        dataLabels: {
+                                            distance: 8 // Уменьшенное расстояние подписей
+                                        }
+                                    }
+                                }
+                            }, true, false);
+                        }
+                    });
+                }
+          
+                const container = document.querySelector('.charts-container');
+                const charts = document.querySelectorAll('.chart-container');
+                
+                if (isMobile) {
+                    container.style.flexDirection = 'column';
+                    charts.forEach(chart => {
+                        chart.style.width = '100%';
+                        chart.style.minHeight = '100px';
+                    });
+                } else {
+                    container.style.flexDirection = 'row';
+                    charts.forEach(chart => {
+                        chart.style.width = '50%';
+                        chart.style.minHeight = '500px'; // Больше высота для подписей
+                    });
+                }
+                
+                // Обновляем диаграммы
+                Highcharts.charts.forEach(chart => {
+                    if (chart) {
+                        chart.update({
+                            plotOptions: {
+                                pie: {
+                                    dataLabels: {
+                                        enabled: !isMobile
+                                    }
+                                }
+                            }
+                        }, true, true);
+                    }
+                });
+            }
+
+            // Инициализация и подписка на события
+            handleResize();
+            window.addEventListener('resize', handleResize);
+
+            // Устанавливаем опции Highcharts для русского языка
+            Highcharts.setOptions({
+                lang: {
+                    contextButtonTitle: "",
+                    loading: "Обработка данных...",
+                    noData: "Нет данных",
+                    viewFullscreen: 'Открыть на весь экран',
+                    printChart: 'Распечатать график',
+                    downloadPNG: 'Загрузить в формате PNG',
+                    downloadJPEG: 'Загрузить в формате JPEG',
+                    downloadSVG: 'Загрузить в формате SVG',
+                    downloadCSV: 'Загрузить в формате CSV',
+                    downloadXLS: 'Загрузить в формате XLS',
+                    exitFullscreen: 'Выйти из полноэкранного режима',
+                    decimalPoint: ',',
+                    thousandsSep: ' ',
+                    months: [
+                        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+                    ],
+                    weekdays: [
+                        'Воскресенье', 'Понедельник', 'Вторник', 'Среда', 
+                        'Четверг', 'Пятница', 'Суббота'
+                    ],
+                    shortMonths: [
+                        'Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 
+                        'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'
+                    ],
+                    rangeSelectorFrom: 'с',
+                    rangeSelectorTo: 'по',
+                    rangeSelectorZoom: ''
+                },
+                exporting: {
+                    buttons: {
+                        contextButton: {
+                            menuItems: ['viewFullscreen', 'printChart', 'separator', 'downloadPNG', 'downloadJPEG', 'downloadSVG', 'separator', 'downloadCSV', 'downloadXLS']
+                        }
+                    }
+                },
+                chart: {
+                    style: {
+                        fontFamily: 'Montserrat'
+                    }
+                },
+                rangeSelector: {
+                    buttonTheme: {
+                        width: 60
+                    },
+                    inputStyle: {
+                        color: 'darkblue',
+                        fontWeight: 'bold'
+                    },
+                    inputDateFormat: '%d.%m.%Y',
+                    inputEditDateFormat:"%d.%m.%Y",
+                },
+                tooltip: {
+                    borderWidth: 0,
+                },
+                scrollbar: {
+                    height: 0
+                },
+                navigator: {
+                    outlineWidth: 0,
+                    maskFill: 'rgba(2, 20, 177, 0.1)',
+                    enabled: true, 
+                    handles: {        
+                        backgroundColor: '#000f9f',
+                        borderColor: '#000f9f',  
+                        borderRadius: '3px',
+                        height: 40
+                    }
+                },
+                xAxis: {
+                    tickLength: 0,
+                    lineWidth: 0
+                },
+            });
+
+            // Функция для создания графика
+            function createChart(shareData, benchmark_growth_data = null) {
+                const benchmarkVisible = document.getElementById('benchmark-toggle').checked;
+
+                // Создаем график
+                const chart = Highcharts.stockChart('container', {
+                    rangeSelector: {
+                        selected: 3,
+                        buttons: [
+                            { type: 'month', count: 1, text: '1 мес' },
+                            { type: 'month', count: 3, text: '3 мес' },
+                            { type: 'month', count: 6, text: '6 мес' },
+                            { type: 'month', count: 12, text: '1 год' },
+                            { type: 'month', count: 36, text: '3 года' },
+                            { type: 'month', count: 60, text: '5 лет' },
+                            { type: 'all', text: 'Весь' }
+                        ]
+                    },
+                    yAxis: {
+                        labels: {
+                            formatter: function () {
+                                return benchmarkVisible ? this.value + '%' : this.value; 
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Стоимость пая',
+                        data: benchmarkVisible ? share_growth_data : shareData, 
+                        type: 'spline',
+                        color: '#000f9f',
+                        tooltip: {
+                            valueDecimals: 2,
+                            pointFormatter: function() {
+                                const sharePrice = JSON.parse('{{ share_data | safe }}').find(point => point[0] === this.x)[1];
+                                const schaData = JSON.parse('{{ scha_data | safe }}').find(point => point[0] === this.x)[1];
+                                const shareGrowth = share_growth_data.find(point => point[0] === this.x)[1];
+
+                                // Используем текущий режим
+                                const label = currentMode === 'пай' ? 'Стоимость пая' : 'Стоимость чистых активов';
+                                const value = currentMode === 'пай' ? sharePrice : schaData;
+
+                                let tooltipStr = `<span style="color:${this.color}">${label}: <b>${value} руб.</b>`;
+
+                                // Добавляем процент роста только для стоимости пая и если benchmarkVisible = true
+                                if (benchmarkVisible && currentMode === 'пай') {
+                                    const formattedShareGrowth = shareGrowth >= 0 ? `+${shareGrowth.toFixed(2)}%` : `${shareGrowth.toFixed(2)}%`;
+                                    tooltipStr += ` (<b>${formattedShareGrowth}</b>)</span><br/>`;
+                                } else {
+                                    tooltipStr += `</span><br/>`; // Закрываем тег, если роста нет
+                                }
+                                return tooltipStr;
+                            }
+                        }
+                    }]
+                });
+
+                // Если чекбокс для бенчмарка включен, добавляем его к графику
+                if (benchmarkVisible) {
+                    chart.addSeries({
+                        name: 'Бенчмарк',
+                        data: benchmark_growth_data,
+                        type: 'spline',
+                        color: 'rgba(60, 60, 60, 0.5)',
+                        tooltip: {
+                            valueDecimals: 2,
+                            pointFormatter: function() {
+                                const benchmarkPrice = benchmark_data.find(point => point[0] === this.x)[1];
+                                const benchmarkGrowth = this.y; // Здесь хранится процент
+                                const formattedBenchmarkGrowth = benchmarkGrowth >= 0 ? `+${benchmarkGrowth.toFixed(2)}%` : `${benchmarkGrowth.toFixed(2)}%`;
+                                return `<span style="color:${this.color}">Бенчмарк: <b>${benchmarkPrice} руб.</b> (<b>${formattedBenchmarkGrowth}</b>)</span><br/>`;
+                            }
+                        }
+                    });
+                };
+
+                updateGrowth(chart, shareData);
+
+                // Обработчик смены диапазона
+                Highcharts.addEvent(chart.xAxis[0], 'setExtremes', function (e) {
+                    updateGrowth(chart, shareData, e.min, e.max);
+                });
+            }
+
+            function updateGrowth(chart, data, min = null, max = null) {
+                const oneDayMs = 24 * 60 * 60 * 1000;
+
+                if (min === null || max === null) {
+                    min = chart.xAxis[0].min;
+                    max = chart.xAxis[0].max;
+                }
+
+                // Находим ближайшую точку перед min (или первую точку, если ничего не найдено)
+                const startPoint = [...data].reverse().find(point => point[0] <= (min - oneDayMs)) || data[0];
+                
+                // Находим ближайшую точку после max (или последнюю точку, если ничего не найдено)
+                const endPoint = data.find(point => point[0] >= (max - oneDayMs)) || data[data.length - 1];
+
+                if (startPoint && endPoint) {
+                    const startValue = startPoint[1];
+                    const endValue = endPoint[1];
+                    const growth = ((endValue / startValue) - 1) * 100;
+                    document.getElementById('growth-percentage').innerText = growth.toFixed(2);
+                }
+            }
+
+            // Инициализируем график на вкладке "Пай"
+            createChart(shareData, benchmark_growth_data);
+
+            // В обработчиках вкладок
+            document.getElementById('tab-pai').addEventListener('click', () => {
+                currentMode = 'пай';
+                createChart(shareData, benchmark_growth_data);
+                setActiveTab('tab-pai');
+                document.querySelector('.benchmark').style.display = 'block';
+            });
+
+            document.getElementById('tab-scha').addEventListener('click', () => {
+                currentMode = 'чистые активы';
+                createChart(schaData);
+                setActiveTab('tab-scha');
+                document.querySelector('.benchmark').style.display = 'none';
+            });
+
+            // Функция для установки активной вкладки
+            function setActiveTab(activeTabId) {
+                // Удаляем классы active со всех вкладок
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active-graph');
+                });
+                // Устанавливаем active класс для текущей вкладки
+                document.getElementById(activeTabId).classList.add('active-graph');
+            }
+
+            // Обработчик для чекбокса бенчмарка
+            document.getElementById('benchmark-toggle').addEventListener('change', () => {
+                // Обновляем график при изменении состояния чекбокса
+                // Проверяем, какая вкладка активна
+                if(document.querySelector('.active-graph').id === 'tab-pai') {
+                    createChart(document.getElementById('benchmark-toggle').checked ? share_growth_data : shareData, benchmark_growth_data); // Обновляем график
+                }
+            });
+        })();
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем данные из шаблона
+            const dateOptions = JSON.parse('{{ date_options_js|tojson }}');
+            const dateDisplays = JSON.parse('{{ date_display_js|tojson }}');
+            const fundData = JSON.parse('{{ fund_data_json|tojson }}');
+            const currentDate = '{{ current_date }}';
+            const lastSharePrice = {{ fund_data_json[-1].share_price }};
+            
+            // Ползунок суммы
+            const amountSlider = document.getElementById('investment-amount');
+            const amountInput = document.getElementById('amount-display');
+            const minAmount = parseInt(amountSlider.min);
+            const maxAmount = parseInt(amountSlider.max);
+            
+            // Ползунок даты
+            const dateSlider = document.getElementById('investment-date');
+            const dateDisplay = document.getElementById('date-display');
+            const calcDate = document.getElementById('calc-date');
+            const maxDateIndex = dateOptions.length - 1;
+            
+            // Элементы результата
+            const resultAmount = document.getElementById('result-amount');
+            const resultInvestDate = document.getElementById('result-invest-date');
+            const resultCurrentDate = document.getElementById('result-current-date');
+            const resultTotal = document.getElementById('result-total');
+            
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+            
+            function updateAmountSlider() {
+                const value = parseInt(amountSlider.value);
+                const percent = (value - minAmount) / (maxAmount - minAmount) * 100;
+                amountSlider.style.setProperty('--fill-percent', `${percent}%`);
+                amountInput.value = formatNumber(value);
+                resultAmount.textContent = formatNumber(value);
+                calculateResult();
+            }
+            
+            function updateDateSlider() {
+                const index = parseInt(dateSlider.value);
+                const percent = index / maxDateIndex * 100;
+                dateSlider.style.setProperty('--fill-percent', `${percent}%`);
+                dateDisplay.value = dateDisplays[index];
+                calcDate.value = dateOptions[index];
+                resultInvestDate.textContent = dateDisplays[index];
+                document.getElementById('result-start-date').textContent = dateDisplays[index]; 
+                calculateResult();
+            }
+            
+            function calculateResult() {
+                const amount = parseInt(amountSlider.value);
+                const dateIndex = parseInt(dateSlider.value);
+                const investDate = dateOptions[dateIndex];
+                
+                // Находим данные для выбранной даты
+                const investPoint = fundData.find(point => point.date === investDate);
+                
+                if (investPoint) {
+                    const shares = amount / investPoint.share_price;
+                    const currentValue = shares * lastSharePrice;
+                    
+                    resultTotal.textContent = formatNumber(currentValue.toFixed(2).replace('.', ',')) + ' руб.';
+                }
+
+                document.getElementById('result-start-date').textContent = dateDisplays[parseInt(dateSlider.value)];
+            }
+            
+            // Обработчики событий
+            amountSlider.addEventListener('input', updateAmountSlider);
+            
+            amountInput.addEventListener('input', function() {
+                let value = parseInt(this.value.replace(/\s/g, '')) || minAmount;
+                value = Math.min(maxAmount, Math.max(minAmount, value));
+                amountSlider.value = value;
+                this.value = formatNumber(value);
+                resultAmount.textContent = formatNumber(value);
+                calculateResult();
+            });
+            
+            dateSlider.addEventListener('input', updateDateSlider);
+            
+            // Инициализация
+            updateAmountSlider();
+            updateDateSlider();
+            calculateResult();
+            
+            // Устанавливаем текущую дату в результат
+            resultCurrentDate.textContent = currentDate;
+        });
+    </script>
+{% endblock%}

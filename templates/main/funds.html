@@ -1,0 +1,1306 @@
+{% extends "base.html" %}
+
+{% block title %} Фонды {% endblock %}
+ 
+{% block style %}
+<style>
+    body {
+        margin-top: 100px;
+    }
+    main {
+        margin-bottom: 70px;
+    }
+    .funds-conteiner {
+        padding: 0px 7px 0px 7px;
+    }
+    .investment-process {
+        padding-top: 60px;
+    }
+
+    .process-container {
+        margin: 0 auto;
+    }
+
+    .process-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 25px;
+        padding: 30px;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s ease;
+    }
+
+    .process-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .process-icon {
+        font-size: 24px;
+        font-weight: 700;
+        color: #000f9f;
+        background: linear-gradient(135deg, #000f9f 0%, #0018cc 100%);
+        background-clip: text;
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 15, 159, 0.1);
+        border-radius: 50%;
+    }
+
+    .process-content h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .process-content p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Анимации */
+    .process-card {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .process-card:nth-child(1) { animation-delay: 0.1s; }
+    .process-card:nth-child(2) { animation-delay: 0.2s; }
+    .process-card:nth-child(3) { animation-delay: 0.3s; }
+    .process-card:nth-child(4) { animation-delay: 0.4s; }
+    .process-card:nth-child(5) { animation-delay: 0.5s; }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .investment-process {
+            padding: 40px 15px;
+        }
+        
+        .process-card {
+            flex-direction: column;
+            gap: 20px;
+            padding: 25px;
+        }
+        
+        .card-number{
+            align-self: center;
+        }
+        
+        .process-content h3 {
+            font-size: 18px;
+        }
+        
+        .process-content p {
+            font-size: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .process-card {
+            padding: 20px;
+            gap: 15px;
+        }
+        
+        .process-content h3 {
+            font-size: 17px;
+        }
+        
+        .process-content p {
+            font-size: 14px;
+        }
+    }
+
+    /* Дополнительные эффекты */
+    .process-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgb(248, 249, 250);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .process-card:hover::before {
+        opacity: 1;
+    } 
+    .card-number {
+        font-size: 60px;
+        font-weight: 800;
+        color: #000f9f;
+        line-height: 1;
+    }
+    
+    .investor-header {
+        margin-bottom: 25px;
+        padding: 7px;
+    }
+
+    .investor-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 6px 0;
+    }
+
+    .investor-subtitle {
+        font-size: 16px;
+        margin: 0 0 4px 0;
+    }
+
+    .investor-category {
+        font-size: 14px;
+    }
+    .investor-category-note {
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid #f0f2f5;
+    }
+
+    .category-badge {
+        font-size: 14px;
+        letter-spacing: 0.3px;
+        text-align: right;
+    }
+
+    .investment-process {
+        padding-top: 60px;
+    }
+
+    .process-container {
+        margin: 0 auto;
+    }
+
+    .process-cards-horizontal {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .process-card-horizontal {
+        display: flex;
+        flex-direction: column;
+        padding: 30px 25px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s ease;
+        text-align: center;
+        height: 100%;
+    }
+
+    .process-card-horizontal:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .process-card-horizontal .card-number {
+        font-size: 48px;
+        font-weight: 800;
+        color: #000f9f;
+        line-height: 1;
+        margin-bottom: 15px;
+    }
+
+    .process-card-horizontal .process-content h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 15px 0;
+    }
+
+    .process-card-horizontal .process-content p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Блок с текстом из 3 шага */
+    .process-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 25px;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        border-radius: 15px;
+        border-left: 4px solid #000f9f;
+    }
+
+    .note-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .note-content h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+    }
+
+    .note-content p {
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Общий текст для всех шагов */
+    .process-global-note {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .global-note-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .process-global-note p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+        font-style: italic;
+    }
+
+    /* Анимации */
+    .process-card-horizontal {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .process-card-horizontal:nth-child(1) { animation-delay: 0.1s; }
+    .process-card-horizontal:nth-child(2) { animation-delay: 0.2s; }
+    .process-card-horizontal:nth-child(3) { animation-delay: 0.3s; }
+
+    .process-note {
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+        animation-delay: 0.4s;
+    }
+
+    .process-global-note {
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+        animation-delay: 0.5s;
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 1024px) {
+        .process-cards-horizontal {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .process-card-horizontal {
+            text-align: left;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        
+        .process-card-horizontal .card-number {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .investment-process {
+            padding: 40px 15px;
+        }
+        
+        .process-card-horizontal {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+            padding: 25px;
+        }
+        
+        .process-note {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+            padding: 20px;
+        }
+        
+        .process-global-note {
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+            padding: 20px;
+        }
+        
+        .process-card-horizontal .process-content h3 {
+            font-size: 17px;
+        }
+        
+        .process-card-horizontal .process-content p {
+            font-size: 14px;
+        }
+        
+        .note-content h4 {
+            font-size: 17px;
+        }
+        
+        .note-content p {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .process-card-horizontal {
+            padding: 20px;
+        }
+        
+        .process-card-horizontal .card-number {
+            font-size: 42px;
+        }
+    }
+    .hero-banner {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        margin-bottom: 40px;
+        overflow: hidden;
+    }
+
+    .banner-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .banner-slides {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .banner-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+        background-image: url("/static/img/fon.png");
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .banner-slide.active {
+        opacity: 1;
+    }
+
+    .banner-slide:nth-child(2) {
+        background: linear-gradient(135deg, #0066cc 0%, #0088ff 100%);
+    }
+
+    .banner-slide:nth-child(3) {
+        background: linear-gradient(135deg, #000f9f 0%, #0018cc 100%);
+    }
+
+    .slide-content {
+        text-align: center;
+        color: white;
+        max-width: 600px;
+        padding: 0 20px;
+    }
+
+    .slide-title {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        line-height: 1.2;
+    }
+
+    .slide-subtitle {
+        font-size: 18px;
+        margin: 0 0 30px 0;
+        line-height: 1.5;
+        opacity: 0.9;
+    }
+
+    .slide-button {
+        padding: 12px 30px;
+        background: white;
+        color: #000f9f;
+        border: none;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    /* Кнопки навигации */
+    .banner-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        z-index: 10;
+        padding-bottom: 5px;
+    }
+
+    .banner-nav:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .banner-prev {
+        left: 20px;
+    }
+
+    .banner-next {
+        right: 20px;
+    }
+
+    /* Индикаторы */
+    .banner-indicators {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+    .indicator {
+        height: 15px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .indicator.active {
+        background: white;
+        transform: scale(1.2);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .hero-banner {
+            height: 300px;
+        }
+        
+        .slide-title {
+            font-size: 28px;
+        }
+        
+        .slide-subtitle {
+            font-size: 16px;
+        }
+        
+        .banner-nav {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+        
+        .banner-prev {
+            left: 10px;
+        }
+        
+        .banner-next {
+            right: 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-banner {
+            height: 250px;
+        }
+        
+        .slide-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .slide-subtitle {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .slide-button {
+            padding: 10px 25px;
+            font-size: 14px;
+        }
+    }
+.company-theses-quotes {
+    margin-top: 90px;
+    position: relative;
+}
+
+.theses-header {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.theses-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+}
+
+.header-accent {
+    width: 60px;
+    height: 3px;
+    background: #000f9f;
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+.quotes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.quote-card {
+    position: relative;
+    background: white;
+    padding: 40px 50px 35px 50px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
+    border: 1px solid #f0f2f5;
+    text-align: center;
+    overflow: hidden;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quote-card:hover {
+    transform: translateY(-8px);
+}
+
+.quote-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #010958, #000f9f);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.quote-card:hover::before {
+    transform: scaleX(1);
+}
+
+.quote-mark {
+    position: absolute;
+    font-size: 70px;
+    font-weight: 800;
+    color: #000f9f;
+    opacity: 0.15;
+    line-height: 1;
+    transition: all 0.4s ease;
+    font-family: Georgia, serif;
+}
+
+.quote-mark-left {
+    top: 20px;
+    left: 25px;
+}
+
+.quote-mark-right {
+    bottom: 15px;
+    right: 25px;
+}
+
+.quote-card:hover .quote-mark {
+    opacity: 0.2;
+    transform: scale(1.1);
+}
+
+.quote-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 0 10px;
+}
+
+.quote-content p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 500;
+    font-style: normal;
+    position: relative;
+}
+
+.quote-accent {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: #e9ecef;
+    border-radius: 1px;
+    transition: all 0.4s ease;
+}
+
+.quote-card:hover .quote-accent {
+    width: 60px;
+    background: #000f9f;
+}
+
+/* Адаптивность */
+@media (max-width: 992px) {
+    .quote-card {
+        padding: 35px 45px 30px 45px;
+        min-height: 150px;
+    }
+    
+    .quote-mark {
+        font-size: 60px;
+    }
+    
+    .quote-mark-left {
+        top: 15px;
+        left: 20px;
+    }
+    
+    .quote-mark-right {
+        bottom: 10px;
+        right: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .company-theses-quotes {
+        margin-top: 40px;
+        padding: 40px 0;
+    }
+    
+    .theses-header h2 {
+        font-size: 28px;
+    }
+    
+    .quotes-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        padding: 0 15px;
+    }
+    
+    .quote-card {
+        padding: 30px 40px 25px 40px;
+        min-height: 140px;
+    }
+    
+    .quote-mark {
+        font-size: 50px;
+    }
+    
+    .quote-mark-left {
+        top: 15px;
+        left: 15px;
+    }
+    
+    .quote-mark-right {
+        bottom: 10px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .theses-header h2 {
+        font-size: 24px;
+    }
+    
+    .quote-content p {
+        font-size: 15px;
+    }
+    
+    .quote-card {
+        padding: 25px 35px 20px 35px;
+        min-height: 130px;
+    }
+    
+    .quote-mark {
+        font-size: 40px;
+    }
+    
+    .quote-mark-left {
+        top: 10px;
+        left: 10px;
+    }
+    
+    .quote-mark-right {
+        bottom: 5px;
+        right: 10px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+    <nav class="breadcrumb" aria-label="Навигация по сайту">
+        <ol>
+            <li><a href="/">Главная</a></li>
+            <li>Фонды</li>
+        </ol>
+    </nav>
+
+    <!-- Баннер с автоперелистыванием -->
+    <div class="hero-banner">
+        <div class="banner-container">
+            <div class="banner-slides">
+                <!-- Слайд 1 -->
+                <div class="banner-slide active">
+                    <div class="slide-content">
+                        <h1 class="slide-title">Инвестируйте в будущее</h1>
+                        <p class="slide-subtitle">Профессиональное управление вашими средствами</p>
+                        <button class="slide-button">Начать инвестировать</button>
+                    </div>
+                </div>
+                
+                <!-- Слайд 2 -->
+                <div class="banner-slide">
+                    <div class="slide-content">
+                        <h1 class="slide-title">Доходность выше рынка</h1>
+                        <p class="slide-subtitle">Экспертные стратегии для достижения ваших финансовых целей</p>
+                        <button class="slide-button">Узнать подробнее</button>
+                    </div>
+                </div>
+                
+                <!-- Слайд 3 -->
+                <div class="banner-slide">
+                    <div class="slide-content">
+                        <h1 class="slide-title">Старт от 10 000 ₽</h1>
+                        <p class="slide-subtitle">Начните инвестировать с любой суммой и получайте стабильный доход</p>
+                        <button class="slide-button">Выбрать фонд</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопки навигации -->
+            <button class="banner-nav banner-prev" aria-label="Предыдущий слайд">‹</button>
+            <button class="banner-nav banner-next" aria-label="Следующий слайд">›</button>
+            
+            <!-- Индикаторы -->
+            <div class="banner-indicators">
+                <button class="indicator active" data-slide="0"></button>
+                <button class="indicator" data-slide="1"></button>
+                <button class="indicator" data-slide="2"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header4">Паевые инвестиционные фонды</div>
+
+    <div class="header5">Что такое ПИФ?</div>
+
+    <div class="funds-conteiner">
+        <div>
+            ПИФ (паевой инвестиционный фонд) - инструмент коллективных инвестиций,
+            объединяющий деньги инвесторов. Профессиональные управляющие инвестируют
+            их для получения дохода
+        </div>
+    </div>
+
+    <div class="investment-process">
+        <div class="process-container">
+            <div class="process-cards-horizontal">
+                <div class="process-card-horizontal">
+                    <div class="card-number">01</div>
+                    <div class="process-content">
+                        <h3>Внесение средств</h3>
+                        <p>Инвестор вносит денежные средства в фонд и становится совладельцем фонда, так как владеет ценными бумагами - паями, которые удостоверяют право инвестора на долю в фонде</p>
+                  </div>
+                </div>
+
+                <div class="process-card-horizontal">
+                    <div class="card-number">02</div>
+                    <div class="process-content">
+                        <h3>Инвестирование</h3>
+                        <p>Управляющая компания вкладывает деньги фонда в различные активы (акции, облигации, недвижимость и др)</p>
+                    </div>
+                </div>
+
+                <div class="process-card-horizontal">
+                    <div class="card-number">03</div>
+                    <div class="process-content">
+                        <h3>Получение дохода</h3>
+                        <p>Если активы фонда растут, то растет и стоимость инвестиционного пая (доли инвестора в фонде). Инвестор может продать инвестиционные паи или дождаться закрытия фонда. Если стоимость инвестиционных паев выросла, то инвестор получит доход</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Текст из 3 шага -->
+            <div class="process-note">
+                <div class="note-content">
+                    <h3>Контроль</h3>
+                    <p>Деятельность управляющего и управляющей компании контролируется законом, Банком России и саморегулируемой организацией. Все участники внимательно следят за тем, чтобы интересы инвесторов соблюдались</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header3">Каталог ПИФ</div>
+
+    <!-- Секция для неквалифицированных инвесторов -->
+    <div class="investor-section">
+        <div class="investor-header">
+            <div class="category-badge">Для неквалифицированных инвесторов</div>
+            <h2 class="investor-title">Инвестиции для каждого</h2>
+            <p class="investor-subtitle">Старт от 10 000 руб - начинайте расти с любой суммой</p>
+        </div>
+
+        <div class="block-center-relative">
+            <button class="scroll-button left fond" aria-label="Scroll Left">&#10094;</button>
+            <div class="center block-conteiner non-qualified-funds">
+                {% for fund in funds if not fund.for_qualified_investors %}
+                <a href="/funds/{{ fund.url_name }}" class="all-link"> 
+                    <div class="block">
+                        <div class="fond-text text-height">{{ fund.name }}</div>
+                        
+                        {% set short_name_parts = fund.short_name.split('«') %}
+                        {% if short_name_parts|length > 1 %}
+                            <h3 class="header2">{{ short_name_parts[1].replace('»', '') }}</h3>
+                        {% else %}
+                            <h3 class="header2">{{ fund.short_name }}</h3>
+                        {% endif %}
+                        
+                        <div class="up">&#x2191;100%</div>
+                        <div class="fond-text">за год на 00.00.2000</div>
+                        
+                        {# Контейнер для логотипа и анимации #}
+                        <div class="container-funds">
+                            <div class="marginforicons">
+                                {# Логотип из базы данных #}
+                                {% if fund.logo %}
+                                    <img class="fund-logo" src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo|b64encode }}" alt="{{ fund.short_name }}">
+                                {% endif %}
+                            </div>
+                            
+                            {# Анимация, если включена в настройках фонда #}
+                            {% if fund.cards_animation %}
+                            <div class="animation">
+                                <div class="inner one"></div>
+                                <div class="inner two"></div>
+                                <div class="inner three"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {# Описание карточки из базы данных #}
+                        <div class="fund-description">
+                            {{ fund.cards_description }}
+                        </div>
+                        
+                        {# Рекомендуемый срок и сумма из базы данных #}
+                        <div class="recommend">
+                            <div class="recommend-title">
+                                {{ fund.cards_period }} 
+                                {% if fund.cards_period % 10 == 1 and fund.cards_period % 100 != 11 %}
+                                    год
+                                {% elif fund.cards_period % 10 >= 2 and fund.cards_period % 10 <= 4 and (fund.cards_period % 100 < 10 or fund.cards_period % 100 >= 20) %}
+                                    года
+                                {% else %}
+                                    лет
+                                {% endif %}
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемый срок инвестирования</div>
+                            </div>
+                        </div>
+                        <div class="recommend">
+                            <div class="recommend-title">{{ "{:,}".format(fund.cards_amount)|replace(',', ' ') }} &#8381;
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемая сумма инвестирования</div>
+                            </div>
+                        </div>
+                        <button class="fond-button">Купить</button>
+                    </div>
+                </a>
+                {% else %}
+                <div class="no-funds-message">
+                    <p>В настоящее время нет доступных фондов для неквалифицированных инвесторов.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="scroll-button right fond" aria-label="Scroll Right">&#10095;</button>
+        </div>
+        <div class="investor-category-note"></div>
+    </div>
+
+    <!-- Секция для квалифицированных инвесторов -->
+    <div class="investor-section">
+        <div class="investor-header">
+            <div class="category-badge qualified">Для квалифицированных инвесторов</div>
+            <h2 class="investor-title">Эксклюзивные стратегии преимум-класса</h2>
+            <p class="investor-subtitle">Ранее доступные лишь избранным. Теперь и для вас, от 100 000 рублей</p>
+        </div>
+
+        <div class="block-center-relative">
+            <button class="scroll-button left fond" aria-label="Scroll Left">&#10094;</button>
+            <div class="center block-conteiner qualified-funds">
+                {% for fund in funds if fund.for_qualified_investors %}
+                <a href="/funds/{{ fund.url_name }}" class="all-link"> 
+                    <div class="block">
+                        <div class="fond-text text-height">{{ fund.name }}</div>
+                        
+                        {% set short_name_parts = fund.short_name.split('«') %}
+                        {% if short_name_parts|length > 1 %}
+                            <h3 class="header2">{{ short_name_parts[1].replace('»', '') }}</h3>
+                        {% else %}
+                            <h3 class="header2">{{ fund.short_name }}</h3>
+                        {% endif %}
+                        
+                        <div class="up">&#x2191;100%</div>
+                        <div class="fond-text">за год на 00.00.2000</div>
+                        
+                        {# Контейнер для логотипа и анимации #}
+                        <div class="container-funds">
+                            <div class="marginforicons">
+                                {# Логотип из базы данных #}
+                                {% if fund.logo %}
+                                    <img class="fund-logo" src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo|b64encode }}" alt="{{ fund.short_name }}">
+                                {% endif %}
+                            </div>
+                            
+                            {# Анимация, если включена в настройках фонда #}
+                            {% if fund.cards_animation %}
+                            <div class="animation">
+                                <div class="inner one"></div>
+                                <div class="inner two"></div>
+                                <div class="inner three"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {# Описание карточки из базы данных #}
+                        <div class="fund-description">
+                            {{ fund.cards_description }}
+                        </div>
+                        
+                        {# Рекомендуемый срок и сумма из базы данных #}
+                        <div class="recommend">
+                            <div class="recommend-title">
+                                {{ fund.cards_period }} 
+                                {% if fund.cards_period % 10 == 1 and fund.cards_period % 100 != 11 %}
+                                    год
+                                {% elif fund.cards_period % 10 >= 2 and fund.cards_period % 10 <= 4 and (fund.cards_period % 100 < 10 or fund.cards_period % 100 >= 20) %}
+                                    года
+                                {% else %}
+                                    лет
+                                {% endif %}
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемый срок инвестирования</div>
+                            </div>
+                        </div>
+                        <div class="recommend">
+                            <div class="recommend-title">{{ "{:,}".format(fund.cards_amount)|replace(',', ' ') }} &#8381;
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемая сумма инвестирования</div>
+                            </div>
+                        </div>
+                        <button class="fond-button">Купить</button>
+                    </div>
+                </a>
+                {% else %}
+                <div class="no-funds-message">
+                    <p>В настоящее время нет доступных фондов для квалифицированных инвесторов.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="scroll-button right fond" aria-label="Scroll Right">&#10095;</button>
+        </div>
+        <div class="investor-category-note"></div>
+    </div>
+
+    <div class="company-theses-quotes">
+        <div class="theses-header">
+            <h2>УК "Рекорд Капитал"</h2>
+            <div class="header-accent"></div>
+        </div>
+
+        <div class="quotes-grid">
+            <!-- Тезис 1 -->
+            <div class="quote-card">
+                <div class="quote-mark quote-mark-left">«</div>
+                <div class="quote-content">
+                    <p>0 рублей за вход в фонды</p>
+                </div>
+                <div class="quote-mark quote-mark-right">»</div>
+                <div class="quote-accent"></div>
+            </div>
+
+            <!-- Тезис 2 -->
+            <div class="quote-card">
+                <div class="quote-mark quote-mark-left">«</div>
+                <div class="quote-content">
+                    <p>С 2013 года сохраняем и приумножаем капиталы наших клиентов</p>
+                </div>
+                <div class="quote-mark quote-mark-right">»</div>
+                <div class="quote-accent"></div>
+            </div>
+
+            <!-- Тезис 3 -->
+            <div class="quote-card">
+                <div class="quote-mark quote-mark-left">«</div>
+                <div class="quote-content">
+                    <p>Команда аналитиков следит за вашим портфелем 24/7</p>
+                </div>
+                <div class="quote-mark quote-mark-right">»</div>
+                <div class="quote-accent"></div>
+            </div>
+
+            <!-- Тезис 4 -->
+            <div class="quote-card">
+                <div class="quote-mark quote-mark-left">«</div>
+                <div class="quote-content">
+                    <p>Мы не продаем обещания, мы показываем результат</p>
+                </div>
+                <div class="quote-mark quote-mark-right">»</div>
+                <div class="quote-accent"></div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'main/question.html' %}
+
+    {% include 'main/consult.html' %}
+
+    {% include 'main/expert.html' %}
+
+    <div class="annotation">
+        <div>* ОПИФ рыночных финансовых инструментов «Алёнка- Капитал» 4 раза получал награды Investfunds: «Лучший ПИФ акций – 2019», «Лучший ПИФ российских акций – 2021», «Лучший ОПИФ рынка акций – 2023» и «Лучший ОПИФ рынка акций – 2024»</div> 
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+// Ждем полной загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция для инициализации скролла для конкретного контейнера
+    function initializeScroll(containerClass) {
+        const block = document.querySelector(containerClass);
+        const leftButton = block ? block.previousElementSibling : null;
+        const rightButton = block ? block.nextElementSibling : null;
+
+        if (block && leftButton && rightButton) {
+            let isDragging = false;
+            let startX;
+            let scrollLeft;
+
+            // Функция для обновления состояния кнопок
+            const updateScrollButtonsVisibility = () => {
+                const totalWidth = block.scrollWidth;
+                const containerWidth = block.clientWidth;
+                const isOverflowing = totalWidth > containerWidth;
+                const isMobile = window.innerWidth < 600;
+
+                if (isOverflowing && !isMobile) {
+                    leftButton.style.display = 'flex';
+                    rightButton.style.display = 'flex';
+                } else {
+                    leftButton.style.display = 'none';
+                    rightButton.style.display = 'none';
+                }
+            };
+
+            // Инициализация
+            updateScrollButtonsVisibility();
+
+            // Обработчики для кнопок прокрутки
+            leftButton.addEventListener('click', () => {
+                block.scrollBy({ left: -300, behavior: 'smooth' });
+            });
+
+            rightButton.addEventListener('click', () => {
+                block.scrollBy({ left: 300, behavior: 'smooth' });
+            });
+
+            // Обработчики drag
+            block.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.pageX - block.offsetLeft;
+                scrollLeft = block.scrollLeft;
+                block.style.cursor = 'grabbing';
+            });
+
+            block.addEventListener('mouseleave', () => {
+                isDragging = false;
+                block.style.cursor = 'grab';
+            });
+
+            block.addEventListener('mouseup', () => {
+                isDragging = false;
+                block.style.cursor = 'grab';
+            });
+
+            block.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - block.offsetLeft;
+                const walk = (x - startX) * 2;
+                block.scrollLeft = scrollLeft - walk;
+            });
+
+            // Обработчики touch для мобильных устройств
+            block.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].pageX - block.offsetLeft;
+                scrollLeft = block.scrollLeft;
+            });
+
+            block.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            block.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                const x = e.touches[0].pageX - block.offsetLeft;
+                const walk = (x - startX) * 2;
+                block.scrollLeft = scrollLeft - walk;
+            });
+
+            // Обновление при изменении размера окна
+            window.addEventListener('resize', updateScrollButtonsVisibility);
+        }
+    }
+
+    // Инициализируем скролл для обоих типов фондов
+    initializeScroll('.non-qualified-funds');
+    initializeScroll('.qualified-funds');
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    class BannerSlider {
+        constructor() {
+            this.slides = document.querySelectorAll('.banner-slide');
+            this.indicators = document.querySelectorAll('.indicator');
+            this.prevBtn = document.querySelector('.banner-prev');
+            this.nextBtn = document.querySelector('.banner-next');
+            this.currentSlide = 0;
+            this.slideInterval = null;
+            this.intervalTime = 5000; // 5 секунд
+            
+            this.init();
+        }
+        
+        init() {
+            // Инициализация событий
+            this.prevBtn.addEventListener('click', () => this.prevSlide());
+            this.nextBtn.addEventListener('click', () => this.nextSlide());
+            
+            // Инициализация индикаторов
+            this.indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => this.goToSlide(index));
+            });
+            
+            // Запуск автоматического перелистывания
+            this.startAutoSlide();
+            
+            // Пауза при наведении
+            const banner = document.querySelector('.banner-container');
+            banner.addEventListener('mouseenter', () => this.stopAutoSlide());
+            banner.addEventListener('mouseleave', () => this.startAutoSlide());
+        }
+        
+        showSlide(index) {
+            // Скрыть все слайды
+            this.slides.forEach(slide => slide.classList.remove('active'));
+            this.indicators.forEach(indicator => indicator.classList.remove('active'));
+            
+            // Показать выбранный слайд
+            this.slides[index].classList.add('active');
+            this.indicators[index].classList.add('active');
+            this.currentSlide = index;
+        }
+        
+        nextSlide() {
+            let nextIndex = (this.currentSlide + 1) % this.slides.length;
+            this.showSlide(nextIndex);
+        }
+        
+        prevSlide() {
+            let prevIndex = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+            this.showSlide(prevIndex);
+        }
+        
+        goToSlide(index) {
+            this.showSlide(index);
+        }
+        
+        startAutoSlide() {
+            this.stopAutoSlide();
+            this.slideInterval = setInterval(() => this.nextSlide(), this.intervalTime);
+        }
+        
+        stopAutoSlide() {
+            if (this.slideInterval) {
+                clearInterval(this.slideInterval);
+                this.slideInterval = null;
+            }
+        }
+    }
+    
+    // Инициализация слайдера
+    new BannerSlider();
+});
+
+// Остальной код для скролла фондов...
+</script>
+{% endblock %}

@@ -1,0 +1,870 @@
+{% extends "base.html" %}
+
+{% block title %} Record Capital {% endblock %}
+ 
+{% block style %}
+    <style>
+        .video {
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        @media (max-width: 768px) {
+            .video {
+                margin-top: 80px;
+            }
+        }
+        .scroll-button {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            z-index: 2; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @media (max-width: 600px) {
+            .scroll-button {
+                display: none; 
+            }
+        }
+        .blocklink {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            flex: 1 1 calc(30%);
+            min-width: 300px;
+            height: auto;
+            box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+            margin: 7px;
+            padding: 20px;
+            border-radius: 13px;
+            transition: 0.7s;
+            background-color: #ffffff;
+            justify-content: center;
+        }
+        .blocklink:hover {
+            box-shadow: 0 0 20px rgba(2, 20, 177, 0.1);
+        }
+        .link {
+            flex: 1;
+            text-align: left;
+            margin-left: 20px;
+        }
+        .blocklink-center {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .CB, .naufor {
+            max-width: 100%;
+            height: auto;
+            min-width: 150px;
+        }
+        .CB {
+            width: 40%;
+        }
+        .naufor {
+            width: 35%;
+            margin: 20px 0;
+        }
+        @media (max-width: 1150px) {
+            .blocklink {
+                flex-direction: column; 
+                align-items: center;
+                width: calc(100%);
+                max-width: 800px;
+            }
+            .link {
+                text-align: center;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            .CB {
+                width: 80%;
+                max-width: 250px;
+            }
+            .naufor {
+                width: 75%;
+                max-width: 230px;
+            }
+        }
+        .invest-container {
+            display: flex;
+            overflow-x: auto;
+            padding-top: 25px;
+            user-select: none;
+            cursor: grab;
+            max-width: 1200px;
+            scrollbar-width: none;
+        }
+        .invest-conteiner:active {
+            cursor: grabbing;
+        }
+        .block-invest {
+            position: relative;
+            display: inline-block;
+            flex: 0 0 auto;
+            width: 245px;
+            height: 270px; 
+            box-shadow: 0 0 20px rgba(102, 102, 102, 0.16);
+            margin: 7px;
+            padding: 20px;
+            border-radius: 13px;
+            transition: 0.7s;
+            background-size: cover;
+            background-color: rgba(255, 255, 255, 0.897);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+        }
+        .block-invest:hover {
+            transition: 0.5s;
+            transform: translateY(-20px);
+            box-shadow: 0 0 20px rgba(2, 19, 177, 0.1);
+            .invest-title {
+                color: rgb(75, 75, 75);
+                transition: 0.5s;
+                transform: translateY(-100px);
+            }
+            .foto {
+                opacity: 0;
+                transition: 0.5s;
+            }
+            .text {
+                opacity: 1;
+                transition: 0.5s;
+            }
+            .invest-for {
+                display: none;
+            }
+            .invest-from {
+                display: none;
+            }
+        }
+        .invest-title {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.808);
+            z-index: 1;
+            background-color: rgba(255, 255, 255, 0.185);
+            width: 265px;
+            height: 70px;
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            transition: 0.5s;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+        }
+        .foto {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .text {
+            opacity: 0;
+            color: rgb(70, 70, 70);
+            margin-top: 80px;
+        }
+        .invest-for {
+            color: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            margin: 150px 10px 0 12px;
+            padding-left: 7px;
+            z-index: 1;
+            line-height: 20px;
+            text-align: left;
+            border-left: 2px solid rgba(255, 255, 255, 0.7);
+        }
+        .invest-from {
+            color: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            top: 85px;
+            margin-left: 170px;
+            z-index: 1;
+            font-weight: 500;
+        }
+        .event-menu-container {
+            display: flex;
+            overflow-x: auto;          
+            cursor: grab;
+            user-select: none;
+            padding: 5px 0 5px 0;
+            max-width: 1200px;
+            scrollbar-width: none;
+        }
+        .event-menu-container:active {
+            cursor: grabbing;
+        }
+        .event-item {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin: 7px; 
+            box-shadow: 0 0 25px rgba(102, 102, 102, 0.075);
+            transition: transform 0.5s;
+            flex: 0 0 285px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+        }
+        /* .event-menu-container > .all-link {
+            flex: 0 0 285px;
+            margin: 7px;
+        } */
+        .event-item:hover {
+            transform: scale(1.05); 
+        }
+        .event-date {
+            color: rgb(85, 85, 85);
+            padding: 10px 20px 0 20px;
+            font-weight: 500;
+            text-align: left;
+        }
+        .event-title {
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10px 20px 0 20px;
+            font-weight: bold;
+            color: #000f9f;
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .event-description {
+            padding: 10px 20px 0 20px;
+            color: #555;
+            text-align: left;
+        }
+        .image-container {
+            height: 50%;
+            overflow: hidden;
+            position: relative; 
+        }
+        .news {
+            position: absolute;
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 100%;
+            pointer-events: none;
+        }
+        .team-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            margin: auto;
+            max-width: 1210px;
+        }
+        .team-member {
+            display: flex;
+            align-items: flex-start;
+            width: 50%;
+        }
+        .member-image {
+            width: 50%;
+            height: auto;
+            margin: 7px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .member-info {
+            width: 50%;
+            flex: 1;
+            margin: 7px;
+            line-height: 20px;
+            z-index: 0;
+            opacity: 0;
+        }
+        .info-right {
+            text-align: right;
+        }
+        .member-name {
+            font-size: 16px;
+            color: #000f9f;
+            font-weight: bold;
+        }
+        .member-position {
+            color: #000f9f;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .member-details {
+            list-style-type: none;
+            padding: 0;
+            color: rgb(92, 91, 110);
+            font-size: 14px;
+        }
+        .member-details li {
+            padding: 3px 0;
+        }
+        @media (min-width: 768px) and (max-width: 1870px) {
+            .team-container {
+                flex-direction: column;
+            }
+            .team-member.reverse {
+                flex-direction: row;
+            }
+            .team-member:first-of-type {
+                flex-direction: row;
+            }
+            .team-member {
+                align-items: center;
+                width: 100%;
+            }
+            .member-info {
+                width: 100%;
+                opacity: 1;
+            }
+            .member-image {
+                opacity: 1;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1200px) {
+            .member-image {
+                width: 35%;
+            }
+        }
+        @media (min-width: 1200px) and (max-width: 1870px) {
+            .member-image {
+                width: 30%;
+            }
+        }
+        @media (max-width: 768px) {
+            .team-container {
+                flex-direction: column;
+            }
+            .team-member {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .member-image {
+                width: 300px;
+                opacity: 1;
+            }
+            .member-info {
+                width: 100%;
+                opacity: 1;
+            }
+            .team-member:nth-of-type(2) {
+                flex-direction: column-reverse;
+                text-align: left;
+            }
+            .info-right {
+                text-align: left;
+            }
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideInSides {
+            0% {
+                transform: translateX(-100%);
+            }
+            30% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideInSidesRight {
+            0% {
+                transform: translateX(100%);
+            }
+            30% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+        @media (min-width: 1870px) {
+            .member-image.animate {
+                animation: slideInSides 0.7s forwards;
+                opacity: 1;
+            }
+            .animationRS.animate {
+                animation: slideInSidesRight 0.7s forwards;
+                opacity: 1;
+            }
+            .member-info.animate {
+                animation: fadeInUp 2s forwards;
+                opacity: 0;
+            }
+        }
+        .history-title {
+            display: block;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 7px;
+            line-height: 1.5;
+            font-size: 18px;
+            color: #000f9f;
+            text-align: center;
+            width: 100%;
+            height: auto;
+            font-weight: 600;
+            max-width: 1140px;
+            position: relative;
+            overflow: hidden;
+        }
+        .history-title::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            bottom: -50%;
+            left: -50%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(20, 47, 168, 0.075) 50%, rgba(255, 255, 255, 0));
+            transform: rotateZ(-40deg);
+            animation: shine 3s infinite linear;
+        }
+        @media (max-width: 1002px) {
+            .history-title::before {
+                background: none;
+            }
+        }
+        @keyframes shine {
+            0% {
+                left: -150%;
+            }
+            50% {
+                left: 100%;
+            }
+            100% {
+                left: 150%;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffffff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ebebeb;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-button:end:increment {
+            width: 30%;
+        }
+        ::-webkit-scrollbar-button:start:increment {
+            width: 30%;
+        }
+        .fixed-button {
+            position: fixed;
+            bottom: 20px; 
+            right: 20px; 
+            background-color: #000f9f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, width 0.5s, height 0.5s, border-radius 0.5s;
+            overflow: hidden;
+        }
+        .fixed-button:hover {
+            background-color: #000f9f;
+            width: 200px;
+            height: 60px;
+            border-radius: 30px;
+        }
+        .phone-icon {
+            width: 30px;
+            transition: opacity 0.3s;
+        }
+        .phone-number {
+            display: inline-block;
+            max-width: 0;
+            white-space: nowrap;
+            transition: max-width 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+        .fixed-button:hover .phone-number {
+            max-width: 120px;
+            opacity: 1; 
+        }
+        .fixed-button:hover .phone-icon {
+            opacity: 0;
+            width: 0;
+        }
+        .form-bottom {
+            margin-bottom: 90px;
+        }
+    </style>
+{% endblock %}
+
+{% block video %}
+    <div class="center video">
+        <video width="100%" autoplay muted loop>
+            <source src="../static/img/background.mp4" type="video/mp4">
+        </video>
+    </div>
+{% endblock %}
+
+{% block main %}
+        <h1 class="header1 center">Инвестировать в готовую идею</h1>
+
+        <div class="block-center-relative">
+            <button class="scroll-button left fond" aria-label="Scroll Left">&#10094;</button>
+            <div class="center block-conteiner">
+                {% for fund in funds %}
+                <a href="/funds/{{ fund.url_name }}" class="all-link"> 
+                    <div class="block">
+                        <div class="fond-text text-height">{{ fund.name }}</div>
+                        
+                        {% set short_name_parts = fund.short_name.split('«') %}
+                        {% if short_name_parts|length > 1 %}
+                            <h3 class="header2">{{ short_name_parts[1].replace('»', '') }}</h3>
+                        {% else %}
+                            <h3 class="header2">{{ fund.short_name }}</h3>
+                        {% endif %}
+                        
+                        <div class="up">&#x2191;100%</div>
+                        <div class="fond-text">за год на 00.00.2000</div>
+                        
+                        {# Контейнер для логотипа и анимации #}
+                        <div class="container-funds">
+                            <div class="marginforicons">
+                                {# Логотип из базы данных #}
+                                {% if fund.logo %}
+                                    <img class="fund-logo" src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo|b64encode }}" alt="{{ fund.short_name }}">
+                                {% endif %}
+                            </div>
+                            
+                            {# Анимация, если включена в настройках фонда #}
+                            {% if fund.cards_animation %}
+                            <div class="animation">
+                                <div class="inner one"></div>
+                                <div class="inner two"></div>
+                                <div class="inner three"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {# Описание карточки из базы данных #}
+                        <div class="fund-description">
+                            {{ fund.cards_description }}
+                        </div>
+                        
+                        {# Рекомендуемый срок и сумма из базы данных #}
+                        <div class="recommend">
+                            <div class="recommend-title">
+                                {{ fund.cards_period }} 
+                                {% if fund.cards_period % 10 == 1 and fund.cards_period % 100 != 11 %}
+                                    год
+                                {% elif fund.cards_period % 10 >= 2 and fund.cards_period % 10 <= 4 and (fund.cards_period % 100 < 10 or fund.cards_period % 100 >= 20) %}
+                                    года
+                                {% else %}
+                                    лет
+                                {% endif %}
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемый срок инвестирования</div>
+                            </div>
+                        </div>
+                        <div class="recommend">
+                            <div class="recommend-title">{{ "{:,}".format(fund.cards_amount)|replace(',', ' ') }} &#8381;
+                                <sup class="tooltip-icon">?</sup>
+                                <div class="tooltip">Рекомендуемая сумма инвестирования</div>
+                            </div>
+                        </div>
+                        <button class="fond-button">Купить</button>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <button class="scroll-button right fond" aria-label="Scroll Right">&#10095;</button>
+        </div>
+
+        <h1 class="header1 center">Индивидуальные инвестиционные решения</h1>
+
+        <div class="block-center-relative">
+            <button class="scroll-button left invest" aria-label="Scroll Left">&#10094;</button>
+            <div class="center invest-container">
+                <div class="block-invest">
+                    <div class="invest-for">Для частных инвестиций, семейного капитала и бизнеса</div>
+                    <div class="invest-from">от 10 млн руб</div>
+                    <h3 class="invest-title">Создание ПИФ под ваши цели</h3>
+                    <img class="foto" src="../static/img/service1.png">
+                    <div class="text">
+                        С помощью ПИФ можно повысить эффективность бизнеса или стратегии,
+                        обеспечить защиту активов и конфиденциальность, привлечь других
+                        инвесторов, распределив риски</div>
+                </div>
+
+                <div class="block-invest">
+                    <div class="invest-for">Наращение капитала для некоммерческих целей</div>
+                    <div class="invest-from">от 3 млн руб</div>
+                    <h3 class="invest-title">Управление фондами целевого капитала (эндаумент фондами)</h3>
+                    <img class="foto" src="../static/img/service2.png">
+                    <div class="text">
+                        Эндаумент-фонд обеспечивает стабильное финансирование для некоммерческих
+                        организаций: генерирует доход от инвестиций, который используется для
+                        поддержки программ, стипендий и других инициатив
+                    </div>
+                </div>
+
+                <div class="block-invest">
+                    <h3 class="invest-title">Управлению средствами компенсационных фондов саморегулируемых организаций</h3>
+                    <img class="foto" src="../static/img/service3.png">
+                    <div class="text">
+                        Качественное управление средствами с учетом всех нормативных ограничений,
+                        и создание индивидуальных решений с учетом особенностей каждого заказчика
+                    </div>
+                </div>
+
+                <div class="block-invest">
+                    <h3 class="invest-title">Консалтинг в создании ПИФ, лицензировании УК и организации биржевого обращения для ПИФ</h3>
+                    <img class="foto" src="../static/img/service4.png">
+                    <div class="text">
+                        Наш многолетний опыт работы и успешная реализация проектов различной
+                        сложности позволяют оказывать квалифицированную помощь в запуске и
+                        управлении фондами
+                    </div>
+                </div>
+            </div>
+            <button class="scroll-button right invest" aria-label="Scroll Right">&#10095;</button>
+        </div>
+
+        <h1 class="header1 center">Информация о команде</h1>
+        
+        <div class="block-center">
+            <div class="team-container">
+                <div class="team-member">
+                    <img class="member-image animationRS" src="../static/img/Storchak.png" alt="Сторчак Руслан Сергеевич">
+                    <div class="member-info">
+                        <h1 class="member-name">Сторчак Руслан Сергеевич</h1>
+                        <h3 class="member-position">Генеральный директор ООО «УК «РЕКОРД КАПИТАЛ»</h3>
+                        <ul class="member-details">
+                            <li>Опыт работы в сфере управления активами свыше 25 лет</li>
+                            <li>Член Экспертного совета при Сибирском ГУ Банка России и комитета НАУФОР по управлению активами</li>
+                            <li>Награжден НАУФОР за личный вклад в развитие фондового рынка и за вклад в повышение финансовой грамотности (Урал и Сибирь)</li>
+                        </ul>
+                    </div>
+                </div>
+            
+                <div class="team-member reverse">
+                    <div class="member-info info-right">
+                        <h1 class="member-name">Нечаева Кристина Андреевна</h1>
+                        <h3 class="member-position">Заместитель генерального директора - Исполнительный директор ООО «УК «РЕКОРД КАПИТАЛ»</h3>
+                        <ul class="member-details">
+                            <li>Опыт работы на рынке ЗПИФ - более 15 лет. Запуск и создание более 30 ЗПИФ</li>
+                            <li>Награждена НАУФОР за вклад в развитие фондового рынка Урала и Сибири</li>
+                        </ul>
+                    </div>
+                    <img class="member-image" src="../static/img/Nechaeva.png" alt="Нечаева Кристина Андреевна">
+                </div>
+            </div>
+        </div>   
+
+        <div class="block-center">
+            <h2 class="history-title">Более 10 лет успешно управляем паевыми инвестиционными фондами!</h2>
+        </div>
+
+        {% include 'main/expert.html' %}
+
+        <h1 class="header1 center">Информация о нас</h1>
+
+        <div class="blocklink-center">
+            <div class="blocklink">
+                <img class="CB" src="../static/img/CB.png">
+                <div class="link">Информация о компании на сайте Банка России</div>
+            </div>
+            <div class="blocklink">
+                <img class="naufor" src="../static/img/naufor.jpg">
+                <div class="link">Информация о членстве компании в саморегулируемой организации</div>
+            </div>
+        </div>
+
+        <h1 class="header1 center">Новости компании</h1>
+
+        <div class="block-center-relative">
+            <button class="scroll-button left event" aria-label="Scroll Left">&#10094;</button>
+            <div class="center event-menu-container">
+                {% for news_item in news_list %}
+                <!-- <a href="{{ url_for('news_detail', news_id=news_item.id) }}" class="all-link"> -->
+                    <div class="event-item">
+                        <div class="image-container">
+                            {% if news_item.cover_image %}
+                                <img class="news" src="data:{{ news_item.cover_mimetype }};base64,{{ news_item.cover_image|b64encode }}">
+                            {% else %}
+                                <img class="news" src="../static/img/default-news.jpg">
+                            {% endif %}
+                        </div>
+                        <div class="event-date">{{ news_item.news_date.strftime('%d') }} {{ get_russian_month(news_item.news_date.strftime('%m')) }} {{ news_item.news_date.strftime('%Y') }} года</div>
+                        <div class="event-title">{{ news_item.title[:35] }}{% if news_item.title|length > 35 %}...{% endif %}</div>
+                        <div class="event-description">
+                            {{ get_first_paragraph(news_item.blocks)[:60] }}{% if get_first_paragraph(news_item.blocks)|length > 60 %}...{% endif %}
+                        </div>
+                    </div>
+                <!-- </a> -->
+                {% endfor %}
+            </div>
+            <button class="scroll-button right event" aria-label="Scroll Right">&#10095;</button>
+        </div>
+
+        {% include 'main/consult.html' %}
+
+        <div class="fixed-button" id="phone-button">
+            <img src="../static/img/telephone.png" alt="Phone Icon" class="phone-icon">
+            <span class="phone-number">+7 123 456 78 90</span>
+        </div>
+
+        <div class="annotation">
+            <div>* ОПИФ рыночных финансовых инструментов «Алёнка- Капитал» 4 раза получал награды Investfunds: «Лучший ПИФ акций – 2019», «Лучший ПИФ российских акций – 2021», «Лучший ОПИФ рынка акций – 2023» и «Лучший ОПИФ рынка акций – 2024»</div> 
+        </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('scroll', function() {
+            const teamSection = document.querySelector('.team-container');
+            const windowBottom = window.innerHeight + window.scrollY;
+    
+            const sectionBottom = teamSection.offsetTop + teamSection.offsetHeight;
+    
+            if (windowBottom >= sectionBottom) {
+                const teamMembers = document.querySelectorAll('.team-member');
+                
+                teamMembers.forEach(member => {
+                    member.querySelector('.member-image').classList.add('animate');
+                    member.querySelector('.member-info').classList.add('animate');
+                });
+            }
+        });
+
+        const block = document.querySelector('.block-conteiner'); // Основной контейнер
+        const invest = document.querySelector('.invest-container'); // Инвестиционный контейнер
+        const event = document.querySelector('.event-menu-container'); // Контейнер событий
+
+        const leftButtons = [
+            document.querySelector('.scroll-button.left.invest'),
+            document.querySelector('.scroll-button.left.event'),
+            document.querySelector('.scroll-button.left.fond') // Для основного контейнера
+        ];
+
+        const rightButtons = [
+            document.querySelector('.scroll-button.right.invest'),
+            document.querySelector('.scroll-button.right.event'),
+            document.querySelector('.scroll-button.right.fond') // Для основного контейнера
+        ];
+
+        let isDragging = false;
+        let startX;
+        let scrollLeft;
+
+        // Функция для обновления состояния кнопок
+        const updateScrollButtonsVisibility = (container, leftButton, rightButton) => {
+            const totalWidth = container.scrollWidth; // Общая ширина контента
+            const containerWidth = container.clientWidth; // Ширина видимой области
+            const isOverflowing = totalWidth > containerWidth; // Проверка на переполнение
+
+            const isMobile = window.innerWidth < 600; // Проверка на мобильную версию
+
+            // Показать кнопки только если контент переполняет контейнер и не мобильная версия
+            if (isOverflowing && !isMobile) {
+                leftButton.style.display = 'flex';
+                rightButton.style.display = 'flex';
+            } else {
+                leftButton.style.display = 'none';
+                rightButton.style.display = 'none';
+            }
+        };
+
+        // Обработка событий мыши для каждого контейнера
+        const handleMouseEvents = (container, leftButton, rightButton) => {
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.pageX - container.offsetLeft;
+                scrollLeft = container.scrollLeft;
+                container.classList.add('active');
+            });
+
+            container.addEventListener('mouseleave', () => {
+                isDragging = false;
+                container.classList.remove('active');
+            });
+
+            container.addEventListener('mouseup', () => {
+                isDragging = false;
+                container.classList.remove('active');
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const walk = (x - startX) * 2; // Размер перемещения
+                container.scrollLeft = scrollLeft - walk;
+            });
+
+            // Скроллинг с помощью кнопок
+            leftButton.addEventListener('click', () => {
+                container.scrollBy({ left: -300, behavior: 'smooth' });
+            });
+
+            rightButton.addEventListener('click', () => {
+                container.scrollBy({ left: 300, behavior: 'smooth' });
+            });
+
+            // Проверяем состояние кнопок при загрузке и изменении размера окна
+            window.addEventListener('resize', () => updateScrollButtonsVisibility(container, leftButton, rightButton));
+            window.addEventListener('load', () => updateScrollButtonsVisibility(container, leftButton, rightButton));
+        };
+
+        // Обработка всех контейнеров
+        handleMouseEvents(invest, leftButtons[0], rightButtons[0]); // Инвестиционный контейнер
+        handleMouseEvents(event, leftButtons[1], rightButtons[1]); // Контейнер событий
+        handleMouseEvents(block, leftButtons[2], rightButtons[2]); // Основной контейнер
+
+        // Инициализация состояния кнопок
+        updateScrollButtonsVisibility(invest, leftButtons[0], rightButtons[0]);
+        updateScrollButtonsVisibility(event, leftButtons[1], rightButtons[1]);
+        updateScrollButtonsVisibility(block, leftButtons[2], rightButtons[2]);
+
+
+        document.getElementById("phone-button").addEventListener("click", function() {
+            const phoneNumber = "+71234567890"; // Номер телефона для передачи
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+            // Проверка на iOS устройство
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.href = `tel:${phoneNumber}`; // Открываем номер для звонка
+            } else {
+                // Для Android-устройств или других платформ
+                const contactLink = `tel:${phoneNumber}`;
+                window.location.href = contactLink;
+            }
+        });
+    </script>
+{% endblock%}

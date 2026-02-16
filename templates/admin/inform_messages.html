@@ -1,0 +1,445 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Информационные сообщения{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .messages-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .message-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border);
+    }
+    
+    .message-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .message-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+        font-size: 1.1rem;
+    }
+    
+    .message-date {
+        font-size: 0.875rem;
+        color: #666;
+    }
+    
+    .message-preview {
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        color: #555;
+        margin-bottom: 1rem;
+    }
+    
+    .message-file {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .message-file i {
+        color: #e74c3c;
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .message-file a {
+        margin-right: 1rem;
+        color: #000f9f;
+        text-decoration: none;
+    }
+    
+    .message-expiration {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+    
+    .message-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    
+    .message-actions a {
+        margin-left: 1rem;
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .read-more {
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .no-messages {
+        text-align: center;
+        padding: 3rem 0;
+        color: #666;
+    }
+    
+    .no-message {
+        margin-top: 1rem;
+        color: #333;
+    }
+    
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+        .messages-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Стили для формы */
+    .file-input-wrapper {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    
+    .file-input-button {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        cursor: pointer;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .file-name {
+        margin-left: 1rem;
+        color: #666;
+    }
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .document-header {
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .document-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+    
+    .document-type {
+        display: inline-block;
+        background: rgba(0, 15, 159, 0.1);
+        color: #000f9f;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-meta {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    
+    .document-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    
+    .document-link {
+        display: inline-flex;
+        align-items: center;
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+    
+    .document-link:hover {
+        color: #000d80;
+    }
+    
+    .document-link i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+        .documents-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <!-- Навигация -->
+    <div class="nav">
+        <a href="/admin/documents/reports">Отчеты УК</a>
+        <a href="/admin/documents/regulations">Регламенты и положения</a>
+        <a class="active" href="/admin/documents/inform_messages">Информационные сообщения</a>
+    </div>
+
+    <!-- Форма добавления -->
+    <div class="card mb-4">
+        <div class="card-header">Добавить новое сообщение</div>
+        <div class="card-body">
+            <form id="messageForm" action="{{ url_for('admin.inform_messages_admin') }}" method="post" enctype="multipart/form-data" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="message_name">Название сообщения</label>
+                        <input type="text" id="message_name" name="message_name" class="form-control" placeholder="Введите название сообщения">
+                        <div class="invalid-feedback">Пожалуйста, укажите название сообщения</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inform_text">Текст сообщения</label>
+                        <textarea id="inform_text" name="inform_text" class="form-control styled-textarea" rows="5" placeholder="Введите текст сообщения"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="document_title">Заголовок документа (необязательно)</label>
+                        <input type="text" id="document_title" name="document_title" class="form-control" placeholder="Введите заголовок документа">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>PDF файл</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="message_file" name="message_file" 
+                                class="form-control-file" accept=".pdf">
+                            <button type="button" class="file-input-button">Выберите файл</button>
+                            <span class="file-name">Файл не выбран</span>
+                            <div class="invalid-feedback">Пожалуйста, выберите PDF файл</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить сообщение</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Список сообщений -->
+    <div class="card">
+        <div class="card-header">Информационные сообщения</div>
+        <div class="card-body">
+            {% if messages %}
+                <div class="messages-grid">
+                    {% for msg in messages %}
+                        <div class="message-card">
+                            <div class="message-header">
+                                <h4 class="message-title">{{ msg.name }}</h4>
+                            </div>
+                            
+                            {% if msg.inform_text %}
+                                <div class="message-preview">
+                                    {{ msg.inform_text|truncate(200) }}...
+                                </div>
+                            {% endif %}
+                            
+                            {% if msg.url %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <a href="{{ msg.url }}" download class="document-icon"><i class="fas fa-file-pdf"></i></a>
+                                        <div>
+                                            <a href="{{ msg.url }}" target="_blank" class="all-link">
+                                                <div class="document-name">{{ msg.document_title }}</div>
+                                            </a>
+                                        </div>
+                                    </div>   
+                                </div>       
+                            {% endif %}
+                            
+                            <div class="message-expiration">
+                                <div>Загружено: {{ msg.upload_date.strftime('%d.%m.%Y %H:%M') }}</div>
+                            </div>
+                            
+                            <div class="message-actions">
+                                <a href="{{ url_for('admin.edit_inform_message', message_id=msg.id) }}" title="Редактировать">
+                                    <i class="fas fa-pencil-alt"></i></i> 
+                                </a>
+                                <a href="{{ url_for('admin.delete_inform_message', message_id=msg.id) }}" 
+                                   title="Удалить" 
+                                   onclick="return confirm('Вы уверены, что хотите удалить это сообщение?')">
+                                    <i class="fas fa-trash"></i> 
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-messages">
+                    <i class="fas fa-comment-alt" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                    <h3 class="no-message">Сообщений пока нет</h3>
+                    <div>Добавьте первое сообщение, используя форму выше</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('messageForm');
+        let formWasSubmitted = false;
+
+        // Инициализация формы
+        function initializeForm() {
+            form.classList.remove('was-validated');
+            form.setAttribute('novalidate', '');
+            resetValidation();
+            
+            if (document.querySelector('.alert-success')) {
+                form.reset();
+                document.querySelector('.file-name').textContent = 'Файл не выбран';
+            }
+        }
+
+        // Сброс валидации
+        function resetValidation() {
+            form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                el.classList.remove('is-invalid', 'is-valid');
+            });
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+
+        // Проверка валидности поля
+        function validateField(field) {
+            if (!field.value.trim() && field.type !== 'file') {
+                field.classList.remove('is-valid');
+                field.classList.add('is-invalid');
+                field.nextElementSibling.style.display = 'block';
+                return false;
+            }
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            if (field.nextElementSibling && field.nextElementSibling.classList.contains('invalid-feedback')) {
+                field.nextElementSibling.style.display = 'none';
+            }
+            return true;
+        }
+
+        // Обработчик ввода данных
+        function handleInput() {
+            if (formWasSubmitted) {
+                validateField(this);
+            }
+        }
+
+        // Отправка формы
+        form.addEventListener('submit', function(event) {
+            formWasSubmitted = true;
+            let isValid = true;
+
+            // Проверка названия сообщения
+            if (!validateField(document.getElementById('message_name'))) isValid = false;
+
+            // Проверка что заполнено хотя бы одно поле (текст или файл)
+            const textField = document.getElementById('inform_text');
+            const fileInput = document.getElementById('message_file');
+            const fileFeedback = fileInput.closest('.form-group').querySelector('.invalid-feedback');
+            
+            if (!textField.value.trim() && !fileInput.files.length) {
+                fileInput.classList.add('is-invalid');
+                fileFeedback.style.display = 'block';
+                isValid = false;
+            } else {
+                fileInput.classList.remove('is-invalid');
+                fileFeedback.style.display = 'none';
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+
+        // Обработчик изменения файла
+        document.getElementById('message_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "Файл не выбран";
+            e.target.parentNode.querySelector('.file-name').textContent = fileName;
+            
+            if (formWasSubmitted) {
+                const fileFeedback = e.target.closest('.form-group').querySelector('.invalid-feedback');
+                if (e.target.files.length) {
+                    e.target.classList.remove('is-invalid');
+                    e.target.classList.add('is-valid');
+                    fileFeedback.style.display = 'none';
+                } else {
+                    e.target.classList.add('is-invalid');
+                    fileFeedback.style.display = 'block';
+                }
+            }
+        });
+
+        // Назначение обработчиков событий
+        form.querySelectorAll('input:not([type="file"]), textarea').forEach(field => {
+            field.addEventListener('input', handleInput);
+        });
+
+        // Инициализация формы
+        initializeForm();
+    });
+</script>
+{% endblock %}

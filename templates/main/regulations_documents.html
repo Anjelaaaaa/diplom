@@ -1,0 +1,103 @@
+{% extends "main/base_documents.html" %}
+
+{% block title %}Регламенты и положения{% endblock %}
+
+{% block documents_style %} 
+<style>
+    .document-item {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        padding: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-name {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    
+    .document-name:hover {
+        color: #000f9f;
+    }
+    
+    .document-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000f9f;
+    }
+    
+    .document-meta {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: 0.7s;
+    }
+    
+    .document-icon:hover {
+        color: #e4e4e4;
+        transition: 0.7s;
+    }
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/documents/uk">Раскрытие информации</a></li>
+        <li>Регламенты и положения</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block documents_content %}
+    <h1 class="header5">Регламенты и положения</h1>
+    
+    <div id="documents-section" class="document-section">
+        {% if documents %}
+            <div class="documents-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <a href="{{ url_for('download_regulations_document', filename=doc.url.split('/')[-1]) }}" download class="document-link all-link">
+                        <div class="document-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                    </a>
+                    <div class="document-info">
+                        <a href="{{ doc.url }}" target="_blank" class="all-link">
+                            <div class="document-name">{{ doc.name }}</div>
+                        </a>
+                        <div class="document-meta">
+                            Загружен: {{ doc.upload_date.strftime('%d.%m.%Y') }}
+                            
+                            {% if doc.date_act_from or doc.date_act_to %} Действует {% endif %}
+                            {% if doc.date_act_from %}
+                                c {{ doc.date_act_from.strftime('%d.%m.%Y') }} 
+                            {% endif %}
+                            {% if doc.date_act_to %}
+                                по {{ doc.date_act_to.strftime('%d.%m.%Y') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

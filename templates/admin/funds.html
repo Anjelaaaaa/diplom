@@ -1,0 +1,179 @@
+{% extends "base_admin.html" %}
+
+{% block title %} Фонды {% endblock %}
+
+{% block style %} 
+<style>
+    .create-btn {
+        background-color: #000f9f;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+    .nav {
+        display: flex;
+        flex-direction: column;
+        box-shadow: none;
+        padding: 0 0;
+    }
+    
+    .fund-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        position: relative;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+    }
+    
+    .fund-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .fund-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+    }
+    
+    .fund-logo {
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .fund-logo img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+    
+    .fund-link {
+        text-decoration: none;
+        color: #252525;
+        font-weight: 500;
+    }
+    .fund-link:hover {
+        color: #000f9f;
+    }
+    .fund-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    
+    .action-btn {
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        background: rgba(29, 64, 180, 0.05);
+        color: #252525;
+    }
+    
+    
+    .fund-status {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        background: rgba(0, 15, 159, 0.1);
+        color: rgb(0, 15, 159);
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .no-funds {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 30px;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .fund-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        
+        .fund-actions {
+            justify-content: center;
+        }
+        
+        .fund-info {
+            justify-content: center;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <a href="{{ url_for('admin.create_fund') }}" class="create-btn">+ Создать фонд</a>
+        
+        {% if funds %}
+            {% for fund in funds %}
+            <a href="funds/{{ fund.url_name }}" class="fund-link">
+                <div class="fund-item">
+                    <div class="fund-info">
+                        {% if fund.logo %}
+                        <div class="fund-logo">
+                            <img src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo|b64encode }}" alt="{{ fund.short_name }}">
+                        </div>
+                        {% else %}
+                        <div class="fund-logo placeholder">
+                            {{ fund.short_name[0] | upper }}
+                        </div>
+                        {% endif %}
+                        
+                        {{ fund.short_name }}
+                    </div>
+                    
+                    <div class="fund-actions">
+                        <span class="action-btn"
+                              onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ url_for('admin.edit_fund', url_name=fund.url_name) }}'">
+                            <i class="fas fa-pencil-alt"></i>
+                        </span>
+                        
+                        <span class="action-btn"
+                              onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ url_for('admin.archive_fund', url_name=fund.url_name) }}'">
+                            {% if fund.is_archived %}
+                                <i class="fas fa-folder-open"></i>
+                            {% else %}
+                                <i class="fas fa-folder"></i>
+                            {% endif %}
+                        </span>
+                        
+                        <span class="action-btn" 
+                              onclick="event.preventDefault(); event.stopPropagation(); if(confirm('Удалить фонд «{{ fund.short_name }}»?')) { window.location.href='{{ url_for('admin.delete_fund', url_name=fund.url_name) }}' }">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                    </div>
+                    
+                    {% if fund.is_archived %}
+                    <div class="fund-status archived">В архиве</div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

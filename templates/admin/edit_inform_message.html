@@ -1,0 +1,251 @@
+{% extends "base_admin.html" %}
+
+{% block style %}
+<style>
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+     
+    .document-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border);
+    }
+    
+    .document-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .document-header {
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .document-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+    
+    .document-type {
+        display: inline-block;
+        background: rgba(0, 15, 159, 0.1);
+        color: #000f9f;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-meta {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    
+    .document-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    
+    .document-link {
+        display: inline-flex;
+        align-items: center;
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+    
+    .document-link:hover {
+        color: #000d80;
+    }
+    
+    .document-link i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+        .documents-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <!-- Навигация -->
+    <div class="nav">
+        <a href="/admin/documents/reports">Отчеты УК</a>
+        <a href="/admin/documents/regulations">Регламенты и положения</a>
+        <a class="active" href="/admin/documents/inform_messages">Информационные сообщения</a>
+    </div>
+
+    <!-- Форма редактирования -->
+    <div class="card mt-4">
+        <div class="card-header">Редактирование сообщения</div>
+        <div class="card-body">
+            <form id="editMessageForm" method="post" action="{{ url_for('admin.edit_inform_message', message_id=message.id) }}" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="message_name">Название сообщения*</label>
+                        <input type="text" id="message_name" name="message_name" class="form-control" 
+                            value="{{ message.name if message.name }}" required>
+                        <div class="invalid-feedback">Пожалуйста, укажите название сообщения</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inform_text">Текст сообщения</label>
+                        <textarea id="inform_text" name="inform_text" class="form-control styled-textarea" rows="10">{{ message.inform_text if message.inform_text }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {% if message.url %}
+                    <label>Текущий PDF файл</label>
+                    <div class="form-row">
+                        <div class="current-file mb-3">
+                            <div class="d-flex align-items-center">
+
+                                <div class="document-header">
+                                    <a href="{{ message.url }}" download class="document-icon"><i class="fas fa-file-pdf"></i></a>
+                                    <div>
+                                        <a href="{{ message.url }}" target="_blank" class="all-link"><div class="document-name">{{ message.document_title if message.document_title }}</div></a>
+                                    </div>
+                                </div>   
+                
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="document_title">Заголовок документа</label>
+                            <input type="text" id="document_title" name="document_title" class="form-control" 
+                                value="{{ message.document_title if message.document_title }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="message_file">Загрузить новый PDF-файл</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="message_file" name="message_file" 
+                                    class="form-control-file" accept=".pdf">
+                                <button type="button" class="file-input-button">Выберите файл</button>
+                                <span class="file-name">Файл не выбран</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if message.url %}
+                <div class="form-row">
+                    <div class="form-check">
+                        <label for="remove_file" class="form-check-label">
+                            <input type="checkbox" id="remove_file" name="remove_file" class="form-check-input">
+                            Удалить файл
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages mt-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        Сохранить
+                    </button>
+                    <a href="{{ url_for('admin.inform_messages_admin') }}" class="btn btn-secondary ml-2">
+                        Отмена
+                    </a>
+                    <button type="submit" formaction="{{ url_for('admin.delete_inform_message', message_id=message.id) }}" 
+                            class="btn btn-danger float-right"
+                            onclick="return confirm('Вы уверены, что хотите удалить это сообщение?')">
+                        Удалить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик изменения файла
+        document.getElementById('message_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Выберите новый файл (PDF)';
+            document.querySelector('.custom-file-label').textContent = fileName;
+        });
+
+        // Валидация формы
+        document.getElementById('editMessageForm').addEventListener('submit', function(e) {
+            const name = document.getElementById('message_name').value.trim();
+            const text = document.getElementById('inform_text').value.trim();
+            const file = document.getElementById('message_file').files[0];
+            const hasFile = {{ 'true' if message.url else 'false' }};
+            const removeFile = document.getElementById('remove_file') ? document.getElementById('remove_file').checked : false;
+            
+            // Проверка обязательного поля названия
+            if (!name) {
+                document.getElementById('message_name').classList.add('is-invalid');
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            // Проверка что заполнено хотя бы одно поле (текст или файл)
+            if (!text && !file && (removeFile || !hasFile)) {
+                alert('Заполните хотя бы одно поле: текст или загрузите файл');
+                e.preventDefault();
+                return false;
+            }
+
+            return true;
+        });
+
+        // После успешного сохранения перенаправляем на список сообщений
+        {% if get_flashed_messages(with_categories=true) %}
+            setTimeout(function() {
+                window.location.href = "{{ url_for('admin.inform_messages_admin') }}";
+            }, 1500);
+        {% endif %}
+    });
+
+    // Изменение файла (для message_file)
+    document.getElementById('message_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : "Файл не выбран";
+        e.target.parentNode.querySelector('.file-name').textContent = fileName;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+
+{% block title %}Новости компании{% endblock %}
+
+{% block style %}
+<style>
+:root {
+    --primary: #000f9f;
+    --primary-light: rgba(29, 64, 180, 0.1);
+    --secondary: #64748b;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    margin-top: 100px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
+
+/* Заголовок страницы */
+.text-center.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+.text-center h1 {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.025em;
+}
+
+.text-center .lead {
+    color: var(--text-light);
+    font-size: 1.125rem;
+    font-weight: 400;
+}
+
+/* ФИЛЬТР ПО ГОДАМ - ИСПРАВЛЕН */
+.filter-container {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 0 0;
+}
+
+.filter-wrapper {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem;
+    display: inline-flex;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.filter-btn {
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn:hover {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.filter-btn.active {
+    color: var(--primary);
+    background: var(--primary-light);
+    font-weight: 600;
+}
+
+.filter-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+/* Сетка карточек - ОДНА В СТРОКУ */
+.news-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem 0 4rem;
+}
+
+/* БАЗОВЫЙ СТИЛЬ КАРТОЧКИ */
+.news-card {
+    background: var(--background);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    min-height: 200px;
+    display: flex;
+    animation: fadeInUp 0.6s ease forwards;
+    margin: 0 7px;
+}
+
+.news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* СТИЛЬ 1: КАРТОЧКА С ИЗОБРАЖЕНИЕМ СПРАВА */
+.news-card-1 {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    min-height: 200px;
+}
+
+.news-card-1 .content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.news-card-1 .image-container {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.news-card-1 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.news-card-1:hover img {
+    transform: scale(1.05);
+}
+
+/* СТИЛЬ 2: КАРТОЧКА С ИЗОБРАЖЕНИЕМ НА ФОНЕ */
+.news-card-2 {
+    position: relative;
+    min-height: 320px;
+    color: white;
+    border: none;
+}
+
+.news-card-2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+    z-index: 1;
+}
+
+.news-card-2 .image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.news-card-2 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.news-card-2:hover img {
+    transform: scale(1.08);
+}
+
+.news-card-2 .content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    width: 100%;
+}
+
+.news-card-2 .news-date,
+.news-card-2 .news-title,
+.news-card-2 .read-more {
+    color: white;
+}
+
+.news-card-2 .news-date {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+/* СТИЛЬ 3: КАРТОЧКА БЕЗ ИЗОБРАЖЕНИЯ (ТОЛЬКО ТЕКСТ) */
+.news-card-3 {
+    min-height: 180px;
+}
+
+.news-card-3 .content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* ОБЩИЕ СТИЛИ ДЛЯ КОНТЕНТА */
+.news-date {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--text-light);
+    background: var(--surface);
+    padding: 0.375rem 0.875rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.news-title {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.news-card-2 .news-title {
+    color: white;
+    font-size: 22px;
+}
+
+/* КНОПКИ "ПОДРОБНЕЕ" - УЛУЧШЕННЫЙ ДИЗАЙН */
+.read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 0.625rem 1.25rem;
+    background: var(--primary-light);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    width: fit-content;
+    border: 1px solid transparent;
+}
+.read-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 0.625rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    width: fit-content;
+    border: 1px solid transparent;
+}
+.read-more:hover {
+    background: rgba(29, 64, 180, 0.15);
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+.read-next:hover {
+    background: rgba(158, 158, 158, 0.15);
+    border-color: white;
+    transform: translateX(4px);
+}
+.read-more svg {
+    transition: transform 0.2s ease;
+}
+.read-next svg {
+    transition: transform 0.2s ease;
+}
+.read-more:hover svg {
+    transform: translateX(4px);
+}
+.read-next:hover svg {
+    transform: translateX(4px);
+}
+
+/* КНОПКИ В СТИЛЕ 3 */
+.btn-outline-primary {
+    padding: 0.625rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--primary);
+    background: transparent;
+    border: 1px solid var(--primary);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(4px);
+    text-decoration: none;
+}
+
+.btn-outline-primary:hover svg {
+    transform: translateX(4px);
+}
+
+.btn-outline-primary svg {
+    transition: transform 0.2s ease;
+}
+
+/* АНИМАЦИИ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.news-card:nth-child(3n+1) { animation-delay: 0.1s; }
+.news-card:nth-child(3n+2) { animation-delay: 0.2s; }
+.news-card:nth-child(3n+3) { animation-delay: 0.3s; }
+
+/* ПУСТОЕ СОСТОЯНИЕ */
+.empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--background);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+.empty-state svg {
+    opacity: 0.4;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* АДАПТИВНОСТЬ */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 700px;
+    }
+    
+    .news-card-1 {
+        grid-template-columns: 1fr 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        margin-top: 160px;
+    }
+    
+    .container {
+        padding: 0 1.25rem;
+        max-width: 100%;
+    }
+    
+    /* ФИЛЬТР НА МОБИЛЬНЫХ */
+    .filter-wrapper {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.625rem 1rem;
+        font-size: 14px;
+    }
+    
+    /* КАРТОЧКИ НА МОБИЛЬНЫХ */
+    .news-grid {
+        gap: 1.5rem;
+    }
+    
+    .news-card-1 {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        min-height: auto;
+    }
+    
+    .news-card-1 .image-container {
+        height: 200px;
+        order: -1;
+    }
+    
+    .news-card-1 .content {
+        padding: 1.5rem;
+    }
+    
+    .news-card-2 {
+        min-height: 280px;
+    }
+    
+    .news-card-2 .content {
+        padding: 1.5rem;
+    }
+    
+    .news-card-3 {
+        min-height: auto;
+    }
+    
+    .news-card-3 .content {
+        padding: 1.5rem;
+    }
+    
+    .news-title {
+        font-size: 22px;
+    }
+    
+    .news-card-2 .news-title {
+        font-size: 22px;
+    }
+}
+
+/* УДАЛЯЕМ АНИМАЦИЮ ПАРАЛЛАКСА */
+.news-card-3 {
+    transform: none !important;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li>Новости компании</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <!-- Заголовок -->
+    <div class="header5">Новости компании</div>
+    <div class="description">Инновации, события и важные обновления</div>
+
+    {% if news_by_year %}
+        <!-- Фильтр по годам - ИСПРАВЛЕН -->
+        <div class="filter-container">
+            <div class="filter-wrapper">
+                <button type="button" class="filter-btn active" data-filter="all">
+                    Все новости
+                </button>
+                {% for year in news_by_year.keys()|sort(reverse=True) %}
+                <button type="button" class="filter-btn" data-filter="{{ year }}">
+                    {{ year }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Сетка новостей - ОДНА КАРТОЧКА В СТРОКУ -->
+        <div class="news-grid">
+            {% for year, news_list in news_by_year.items()|sort(reverse=True) %}
+                {% for news_item in news_list %}
+                    {% set card_style = loop.index % 3 %}
+                    
+                    <!-- Русские месяцы -->
+                    {% set month_names = {
+                        'January': 'января',
+                        'February': 'февраля',
+                        'March': 'марта',
+                        'April': 'апреля',
+                        'May': 'мая',
+                        'June': 'июня',
+                        'July': 'июля',
+                        'August': 'августа',
+                        'September': 'сентября',
+                        'October': 'октября',
+                        'November': 'ноября',
+                        'December': 'декабря'
+                    } %}
+                    
+                    {% set russian_date = news_item.news_date.strftime('%d ') + month_names[news_item.news_date.strftime('%B')] + news_item.news_date.strftime(' %Y') %}
+                    
+                    {% if card_style == 0 %}
+                    <!-- Стиль 1: Изображение справа -->
+                    <div class="news-card news-card-1 year-{{ year }}" data-year="{{ year }}">
+                        <div class="content">
+                            <span class="news-date">{{ news_item.news_date.strftime('%d.%m.%Y') }}</span>
+                            <h3 class="news-title">{{ news_item.title }}</h3>
+                            <a href="{{ url_for('news_detail', news_id=news_item.id) }}" class="read-more">
+                                Читать
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        {% if news_item.cover_image %}
+                        <div class="image-container">
+                            <img src="data:{{ news_item.cover_mimetype }};base64,{{ news_item.cover_image|b64encode }}" 
+                                alt="{{ news_item.title }}">
+                        </div>
+                        {% else %}
+                        <div class="image-container" style="background: linear-gradient(135deg, rgba(0, 15, 159, 0.1) 0%, rgba(29, 64, 180, 0.1) 100%);"></div>
+                        {% endif %}
+                    </div>
+                    
+                    {% elif card_style == 1 %}
+                    <!-- Стиль 2: Изображение на фоне -->
+                    <div class="news-card news-card-2 year-{{ year }}" data-year="{{ year }}">
+                        {% if news_item.cover_image %}
+                        <div class="image-container">
+                            <img src="data:{{ news_item.cover_mimetype }};base64,{{ news_item.cover_image|b64encode }}" 
+                                alt="{{ news_item.title }}">
+                        </div>
+                        {% else %}
+                        <div class="image-container" style="background: linear-gradient(135deg, #000f9f 0%, #1d40b4 100%);"></div>
+                        {% endif %}
+                        <div class="content">
+                            <span class="news-date">{{ news_item.news_date.strftime('%d.%m.%Y') }}</span>
+                            <h3 class="news-title">{{ news_item.title }}</h3>
+                            <a href="{{ url_for('news_detail', news_id=news_item.id) }}" class="read-next">
+                                Читать полностью
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- Стиль 3: Без изображения -->
+                    <div class="news-card news-card-3 year-{{ year }}" data-year="{{ year }}">
+                        <div class="content">
+                            <div class="content-top">
+                                <span class="news-date">{{ russian_date }}</span>
+                                <h3 class="news-title mt-2">{{ news_item.title }}</h3>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{{ url_for('news_detail', news_id=news_item.id) }}" 
+                                class="btn-outline-primary">
+                                    Подробнее →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+        
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="text-center py-5 my-5">
+            <div class="empty-state">
+                <svg width="80" height="80" fill="#dee2e6" viewBox="0 0 16 16">
+                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                <h3 class="mt-4 text-muted">Новостей пока нет</h3>
+                <p class="text-muted">Будьте первым, кто добавит новость!</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const newsCards = document.querySelectorAll('.news-card');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Снимаем активный класс со всех кнопок
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Добавляем активный класс текущей кнопке
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            // Показываем/скрываем карточки без изменения их стилей
+            newsCards.forEach(card => {
+                if (filter === 'all') {
+                    // Просто показываем карточку, не трогая ее стили
+                    card.style.display = '';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.visibility = 'visible';
+                    }, 10);
+                } else if (card.classList.contains(`year-${filter}`)) {
+                    // Показываем карточку нужного года
+                    card.style.display = '';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.visibility = 'visible';
+                    }, 10);
+                } else {
+                    // Плавно скрываем карточку, но не удаляем ее стили
+                    card.style.opacity = '0';
+                    card.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+    
+    // Убираем параллакс и другие лишние анимации
+    newsCards.forEach(card => {
+        // Сохраняем оригинальные стили карточек
+        card.setAttribute('data-original-style', card.getAttribute('style') || '');
+        
+        // Удаляем обработчики параллакса если они есть
+        card.removeEventListener('mousemove', () => {});
+        card.removeEventListener('mouseleave', () => {});
+    });
+    
+    // Простая анимация появления при скролле
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Восстанавливаем оригинальные стили карточки
+                const originalStyle = entry.target.getAttribute('data-original-style');
+                entry.target.style.cssText = originalStyle + ' opacity: 1; transform: translateY(0);';
+            }
+        });
+    }, { threshold: 0.05 });
+    
+    newsCards.forEach(card => observer.observe(card));
+});
+</script>
+{% endblock %}

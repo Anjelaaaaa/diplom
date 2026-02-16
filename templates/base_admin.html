@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="/static/css/admin_main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="shortcut icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/static/img/favicon-16x16.png">
+    <link rel="icon" href="/static/img/favicon-32x32.png">
+</head>
+{% block style %} {% endblock %}
+<body>
+    <input type="checkbox" id="myInput" class="checkbox-none">
+    <label for="myInput" class="right">
+        <span class="bar top"></span>
+        <span class="bar middle"></span>
+        <span class="bar bottom"></span>
+    </label>
+
+    <aside>
+        <div class="aside-section">
+            <!-- Заголовок -->
+            <div class="admin-header">
+                <h3>Record Capital</h3>
+                <p>Административная панель</p>
+            </div>
+
+            <!-- Блок пользователя -->
+            {% if current_user.is_authenticated %}
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="username">{{ current_user.username }}</span>
+                        <span class="user-role">Администратор</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Выход внизу -->
+            {% if current_user.is_authenticated %}
+            <div class="logout-section">
+                <a href="{{ url_for('admin.logout') }}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </a>
+            </div>
+            {% endif %}     
+
+            <div class="menu">
+                <a class="link {% if request.path == '/admin/funds' or request.path.startswith('/admin/funds/') %}active{% endif %}" 
+                href="/admin/funds">Фонды</a>
+                
+                <a class="link {% if request.path == '/admin/documents' or request.path.startswith('/admin/documents/') %}active{% endif %}" 
+                href="/admin/documents">Документы</a>
+
+                <a class="link {% if request.path == '/admin/news' or request.path.startswith('/admin/news/') %}active{% endif %}" 
+                href="/admin/news">Новости</a>
+
+                <a class="link {% if request.path == '/admin/analytics' or request.path.startswith('/admin/analytics/') %}active{% endif %}" 
+                href="/admin/analytics">Рынок и аналитика</a>
+
+                <a class="link {% if request.path == '/admin/events' or request.path.startswith('/admin/events/') %}active{% endif %}" 
+                href="/admin/events">История компании</a>
+            </div>      
+        </div>
+    </aside>
+
+    <main>
+        {% block main %} {% endblock%}
+    </main>
+</body>
+    <script>
+        document.getElementById('document_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "Файл не выбран";
+            e.target.parentNode.querySelector('.file-name').textContent = fileName;
+        });
+    </script>
+    {% block script %} {% endblock%}
+</html>

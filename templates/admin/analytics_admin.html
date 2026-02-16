@@ -1,0 +1,289 @@
+{% extends "base_admin.html" %}
+
+{% block title %} Аналитика {% endblock %}
+
+{% block style %} 
+<style>
+    .create-btn {
+        background-color: #000f9f;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .create-btn:hover {
+        background-color: #000c7a;
+        transform: translateY(-2px);
+    }
+    
+    .nav {
+        display: flex;
+        flex-direction: column;
+        box-shadow: none;
+        padding: 0 0;
+    }
+    
+    .analytics-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        position: relative;
+        transition: all 0.3s ease;
+        overflow: hidden; /* Добавляем чтобы надпись не выходила за границы */
+    }
+
+    .analytics-item::before {
+        content: "АНАЛИТИКА АНАЛИТИКА";
+        position: absolute;
+        left: 0;
+        top: -25px;
+        bottom: 0;
+        width: 30px; /* Ширина области с текстом */
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(29, 64, 180, 0.3);
+        font-size: 14px;
+        font-weight: 700;
+        writing-mode: vertical-rl; /* Вертикальное написание */
+        text-orientation: mixed;
+        transform: rotate(180deg); /* Разворачиваем на 90 градусов вправо */
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .analytics-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex: 1;
+        margin-left: 30px; /* Отступ чтобы контент не наезжал на надпись */
+    }
+    
+    .analytics-item:hover {
+        transform: translateY(-3px);
+    }
+    
+    .analytics-cover { 
+        width: 120px;
+        height: 80px;
+        border-radius: 4px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .analytics-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .analytics-details {
+        flex: 1;
+    }
+    
+    .analytics-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #252525;
+        margin-bottom: 5px;
+        line-height: 1.3;
+    }
+    
+    .analytics-date {
+        font-size: 14px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .analytics-date i {
+        color: #000f9f;
+    }
+    
+    .analytics-actions {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    
+    .action-btn {
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        background: rgba(29, 64, 180, 0.05);
+        color: #252525;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .no-analytics {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 50px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .analytics-meta {
+        display: flex;
+        gap: 15px;
+        margin-top: 8px;
+        font-size: 13px;
+        color: #888;
+    }
+    
+    .analytics-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .analytics-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        .analytics-info {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        
+        .analytics-actions {
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .analytics-cover {
+            width: 100%;
+            height: 150px;
+        }
+        
+        .analytics-meta {
+            justify-content: center;
+        }
+        .analytics-item::before {
+            width: 25px;
+            font-size: 12px;
+        }
+        
+        .analytics-info {
+            margin-left: 25px;
+        }
+        
+        .analytics-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <a href="{{ url_for('admin.create_analytics') }}" class="create-btn">
+            + Создать аналитику
+        </a>
+        
+        {% if analytics_list %}
+            <div class="analytics-list">
+                {% for analytics_item in analytics_list %}
+                <div class="analytics-item">
+                    <div class="analytics-info">
+                        <div class="analytics-cover">
+                            {% if analytics_item.cover_image %}
+                            <img src="data:{{ analytics_item.cover_mimetype }};base64,{{ analytics_item.cover_image|b64encode }}" 
+                                alt="Обложка аналитики: {{ analytics_item.title }}">
+                            {% else %}
+                            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #999;">
+                                <i class="fas fa-image fa-2x"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="analytics-details">
+                            <div class="analytics-title">{{ analytics_item.title }}</div>
+                            <div class="analytics-date">
+                                {{ analytics_item.analytics_date.strftime('%d.%m.%Y') }}
+                            </div>
+                            <div class="analytics-meta">
+                                <span>
+                                    Опубликовано: {{ analytics_item.publish_date_moscow.strftime('%d.%m.%Y в %H:%M') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-actions">
+                        <button class="action-btn edit"
+                                onclick="window.location.href='{{ url_for('admin.edit_analytics', analytics_id=analytics_item.id) }}'">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        
+                        <button class="action-btn delete" 
+                                onclick="if(confirm('Вы уверены, что хотите удалить аналитику «{{ analytics_item.title }}»? Это действие нельзя отменить.')) { 
+                                    window.location.href='{{ url_for('admin.delete_analytics', analytics_id=analytics_item.id) }}' 
+                                }">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-analytics">
+                <i class="fas fa-chart-line fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
+                <h3 style="color: #666; margin-bottom: 10px;">Аналитики пока нет</h3>
+                <p style="color: #888;">Создайте первую аналитику, нажав на кнопку выше</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем анимацию появления элементов
+    const analyticsItems = document.querySelectorAll('.analytics-item');
+    analyticsItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            item.style.transition = 'all 0.5s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

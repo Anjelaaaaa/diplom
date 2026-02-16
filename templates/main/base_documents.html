@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    body {
+        margin-top: 100px;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+    
+    /* Основной контейнер документов */
+    .documents-main-container {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 30px;
+    }
+    
+    /* Боковая панель навигации (как в вашем примере) */
+    .main-sidebar {
+        width: 270px;
+        flex-shrink: 0;
+        margin: 10px 0 30px 0;
+        font-size: 14px;
+    }
+    
+    .main-nav-list {
+        position: sticky;
+        top: 120px;
+    }
+    
+    .main-nav-item {
+        padding: 15px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: block;
+        color: #2b2b2b;
+        text-decoration: none;
+        border-left: 1px solid #dee2e6;
+    }
+    
+    .main-nav-item:hover {
+        background: rgb(248, 249, 250);
+        color: #000f9f;
+        font-weight: 500;
+        border-left: 3px solid  #000f9f;
+    }
+    
+    .main-nav-item.active {
+        background: rgb(248, 249, 250);
+        color: #000f9f;
+        font-weight: 500;
+        border-left: 3px solid  #000f9f;
+    }
+    
+    /* Контентная область */
+    .main-content {
+        flex-grow: 1;
+    }
+    
+    /* Остальные стили */
+    .breadcrumb {
+        margin-bottom: 20px;
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 1000px) {
+        .documents-main-container {
+            flex-direction: column;
+        }
+        
+        .main-sidebar {
+            width: 100%;
+            margin: 10px 0 0 0;
+        }
+        
+        .main-nav-item {
+            white-space: nowrap;
+        }
+    }
+</style>
+{% block documents_style %} {% endblock %}
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    {% block breadcrumb %} {% endblock %}
+    
+    <div class="documents-main-container">
+        <!-- Боковая панель навигации -->
+        <div class="main-sidebar">
+            <div class="main-nav-list">
+                <a href="{{ url_for('uk_documents') }}" 
+                   class="main-nav-item {% if request.path == url_for('uk_documents') %}active{% endif %}">
+                    Управляющая компания
+                </a>
+                <a href="{{ url_for('funds_documents') }}" 
+                   class="main-nav-item {% if request.path == url_for('funds_documents') %}active{% endif %}">
+                    Паевые инвестиционные фонды
+                </a>
+                <a href="{{ url_for('regulations_documents') }}" 
+                   class="main-nav-item {% if request.path == url_for('regulations_documents') %}active{% endif %}">
+                    Регламенты и положения
+                </a>
+                <a href="{{ url_for('messages_documents') }}" 
+                   class="main-nav-item {% if '/documents/messages' in request.path %}active{% endif %}">
+                    Информационные сообщения
+                </a>
+            </div>
+        </div>
+        
+        <!-- Основное содержимое -->
+        <div class="main-content">
+            {% block documents_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

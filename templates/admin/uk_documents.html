@@ -1,0 +1,377 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Отчетность УК{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+     
+    .document-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border);
+    }
+    
+    .document-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .document-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .document-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+    
+    .document-type {
+        display: inline-block;
+        background: rgba(0, 15, 159, 0.1);
+        color: #000f9f;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .document-meta {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    
+    .document-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    
+    .document-link {
+        display: inline-flex;
+        align-items: center;
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+    
+    .document-link:hover {
+        color: #000d80;
+    }
+    
+    .document-link i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+        .documents-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="nav">
+        <a class="active" href="/admin/documents/reports">Отчеты УК</a>
+        <a href="/admin/documents/regulations">Регламенты и положения</a>
+        <a href="/admin/documents/inform_messages">Информационные сообщения</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">Добавить новый отчет</div>
+        <div class="card-body">
+            <form id="documentForm" action="{{ url_for('admin.documents_admin') }}" method="post" enctype="multipart/form-data" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="document_name">Название документа*</label>
+                        <input type="text" id="document_name" name="document_name" class="form-control" required>
+                        <div class="invalid-feedback">Пожалуйста, укажите название документа</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>PDF файл*</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="document_file" name="document_file" 
+                                class="form-control-file" accept=".pdf" required>
+                            <button type="button" class="file-input-button">Выберите файл</button>
+                            <span class="file-name">Файл не выбран</span>
+                            <div class="invalid-feedback">Пожалуйста, выберите PDF файл</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expiration_date">Дата окончания доступа (необязательно)</label>
+                        <input type="date" id="expiration_date" name="expiration_date" class="form-control">
+                    </div>
+                </div>
+
+                <div class="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить документ</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Отчеты УК</div>
+        <div class="card-body">
+            <!-- Фильтр по дате -->
+            <form method="get" action="{{ url_for('admin.documents_admin') }}" class="date-filter">
+                <div class="filter-container">
+                    <div class="date-filters">
+                        <div class="form-group">
+                            <label for="date_from">Дата с</label>
+                            <input type="date" id="date_from" name="date_from" class="form-control" 
+                                value="{{ request.args.get('date_from', '') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_to">Дата по</label>
+                            <input type="date" id="date_to" name="date_to" class="form-control"
+                                value="{{ request.args.get('date_to', '') }}">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button id="apply_filter" class="btn btn-primary">Применить</button>
+                        <button id="reset_filter" class="btn btn-secondary">Сбросить</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if documents %}
+                <div class="documents-grid">
+                    {% for doc in documents %}
+                        <div class="document-card">
+                            <div class="document-header">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <div>
+                                    <div class="document-title">{{ doc.name }}</div>
+                                    {% if doc.expiration_date %}
+                                        {% set now_date = datetime.now() %}
+                                        {% set is_active = doc.expiration_date > now_date %}
+                                        
+                                        <span class="document-status document-status-{% if is_active %}active{% else %}expired{% endif %}">
+                                            <i class="status-icon {% if is_active %}fas fa-check-circle{% else %}fas fa-exclamation-circle{% endif %}"></i>
+                                            {{ 'Активно' if is_active else 'Истекло' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="document-status document-status-no-expiry">
+                                            <i class="status-icon fas fa-infinity"></i>
+                                            Бессрочно
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="document-meta">
+                                <div>Загружено: {{ doc.upload_date.strftime('%d.%m.%Y %H:%M') }}</div>
+                                {% if doc.expiration_date %}
+                                    <div>Действует до: {{ doc.expiration_date.strftime('%d.%m.%Y') }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="document-actions">
+                                <a href="{{ doc.url }}" target="_blank" class="document-link">
+                                   Смотреть
+                                </a>
+                                <a href="{{ doc.url }}" download class="document-link">
+                                    Скачать
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-documents">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                    <h3 class="no-document">Документов пока нет</h3>
+                    <div>Добавьте первый документ, используя форму выше</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('documentForm');
+        let formWasSubmitted = false;
+
+        // 1. Инициализация формы
+        function initializeForm() {
+            form.classList.remove('was-validated');
+            form.setAttribute('novalidate', '');
+            resetValidation();
+            
+            if (document.querySelector('.alert-success')) {
+                form.reset();
+                document.querySelector('.file-name').textContent = 'Файл не выбран';
+            }
+        }
+
+        // 2. Сброс валидации
+        function resetValidation() {
+            form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                el.classList.remove('is-invalid', 'is-valid');
+            });
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+
+        // 3. Проверка валидности поля
+        function validateField(field) {
+            if (!field.value.trim() && field.type !== 'file') {
+                field.classList.remove('is-valid');
+                field.classList.add('is-invalid');
+                field.nextElementSibling.style.display = 'block';
+                return false;
+            }
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            if (field.nextElementSibling && field.nextElementSibling.classList.contains('invalid-feedback')) {
+                field.nextElementSibling.style.display = 'none';
+            }
+            return true;
+        }
+
+        // 4. Обработчик ввода данных
+        function handleInput() {
+            if (formWasSubmitted) {
+                validateField(this);
+            }
+        }
+
+        // 5. Обработчик отправки формы
+        form.addEventListener('submit', function(event) {
+            formWasSubmitted = true;
+            let isValid = true;
+
+            // Проверка названия документа
+            if (!validateField(document.getElementById('document_name'))) isValid = false;
+
+            // Проверка файла
+            const fileInput = document.getElementById('document_file');
+            const fileFeedback = fileInput.closest('.form-group').querySelector('.invalid-feedback');
+            
+            if (!fileInput.files.length) {
+                fileInput.classList.add('is-invalid');
+                fileFeedback.style.display = 'block';
+                isValid = false;
+            } else {
+                fileInput.classList.remove('is-invalid');
+                fileInput.classList.add('is-valid');
+                fileFeedback.style.display = 'none';
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+
+        // Обработчик изменения файла
+        document.getElementById('document_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "Файл не выбран";
+            e.target.parentNode.querySelector('.file-name').textContent = fileName;
+            
+            if (formWasSubmitted) {
+                const fileFeedback = e.target.closest('.form-group').querySelector('.invalid-feedback');
+                if (e.target.files.length) {
+                    e.target.classList.remove('is-invalid');
+                    e.target.classList.add('is-valid');
+                    fileFeedback.style.display = 'none';
+                } else {
+                    e.target.classList.add('is-invalid');
+                    fileFeedback.style.display = 'block';
+                }
+            }
+        });
+
+        // 6. Назначение обработчиков событий
+        form.querySelectorAll('input:not([type="file"]), select').forEach(field => {
+            field.addEventListener('input', handleInput);
+        });
+
+        // 7. Инициализация формы
+        initializeForm();
+    });
+</script>
+<script>
+    // Отображение имени выбранного файла
+    document.getElementById('document_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+        document.querySelector('.file-name').textContent = fileName;
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateFrom = document.getElementById('date_from');
+        const dateTo = document.getElementById('date_to');
+        const applyBtn = document.getElementById('apply_filter');
+        const resetBtn = document.getElementById('reset_filter');
+        const tableRows = document.querySelectorAll('#fund_values_table tr');
+        
+        // Применение фильтра
+        applyBtn.addEventListener('click', function() {
+            const from = dateFrom.value;
+            const to = dateTo.value || from; // Если не указана конечная дата, фильтруем по одной дате
+            
+            tableRows.forEach(row => {
+                const rowDate = row.dataset.date;
+                if ((!from || rowDate >= from) && (!to || rowDate <= to)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Сброс фильтра
+        resetBtn.addEventListener('click', function() {
+            dateFrom.value = '';
+            dateTo.value = '';
+            tableRows.forEach(row => {
+                row.style.display = '';
+            });
+        });
+    });
+</script>
+{% endblock %}

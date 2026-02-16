@@ -1,0 +1,112 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Вход в админку{% endblock %}
+
+{% block style %}
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+    
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background: #000f9f;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    .submit-btn:hover {
+        background: #000d80;
+    }
+    
+    .alert {
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .alert-success {
+        background: #d1edff;
+        color: #004085;
+        border: 1px solid #b8daff;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="login-container">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Вход</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required 
+                   autocomplete="username" value="{{ request.form.username or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required 
+                   autocomplete="current-password">
+        </div>
+        
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="remember_me" name="remember_me">
+            <label for="remember_me">Запомнить меня</label>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <button type="submit" class="submit-btn">Войти</button>
+    </form>
+</div>
+{% endblock %}

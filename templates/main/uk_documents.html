@@ -1,0 +1,351 @@
+{% extends "main/base_documents.html" %}
+
+{% block title %}Управляющая компания{% endblock %}
+
+{% block documents_style %} 
+<style>
+    .uk-content {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+    
+    /* Стили для табов */
+    .uk-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 14px;
+    }
+    
+    .uk-tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .uk-tab:hover {
+        color: #000f9f;
+        font-weight: 500;
+    }
+    
+    .uk-tab.active {
+        color: #000f9f;
+        border-bottom-color: #000f9f;
+        font-weight: 500;
+    }
+
+    /* Стили для красивой таблицы */
+    .uk-table-conteiner {
+        overflow: auto;
+    }
+    .uk-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .uk-table tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .uk-table tr:hover {
+        background-color: #f8fafc;
+    }
+    
+    .uk-table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #eaecef;
+        vertical-align: top;
+    }
+    
+    .uk-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .uk-table td:first-child {
+        font-weight: 600;
+        width: 200px;
+        min-width: 200px;
+        border-right: 1px solid #eaecef;
+    }
+    
+    .uk-table a {
+        color: #000f9f;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .uk-table a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Стили для документов */
+    .document-section {
+        display: none;
+    }
+    
+    .document-section.active {
+        display: block;
+    }
+    
+    .document-item {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        padding: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-name {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    
+    .document-name:hover {
+        color: #000f9f;
+    }
+    
+    .document-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: #000f9f;
+    }
+    
+    .document-meta {
+        font-size: 14px;
+    }
+    
+    .document-icon {
+        font-size: 50px;
+        color: #000f9f;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: 0.7s;
+    }
+    
+    .document-icon:hover {
+        color: #e4e4e4;
+        transition: 0.7s;
+    }
+    .lic-conteiner {
+        text-align: center;
+    }
+    .lic {
+        width: 49%;
+    }
+    .svid {
+        width: 60%;
+    }
+    .trademark {
+        width: 70%;
+    }
+    @media (max-width: 768px) {
+        .trademark {
+            width: 97%;
+        }
+        .svid {
+            width: 97%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/documents/uk">Раскрытие информации</a></li>
+        <li>Управляющая компания</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block documents_content %}
+    <h1 class="header5">Управляющая компания</h1>
+    
+    <!-- Табы для переключения между разделами -->
+    <div class="uk-tabs">
+        <div class="uk-tab active" data-target="about-section">Сведения об УК</div>
+        <div class="uk-tab" data-target="documents-section">Отчеты УК</div>
+    </div>
+    
+    <!-- Раздел "О компании" -->
+    <div id="about-section" class="document-section active">
+        <div class="uk-content">
+            <h2 class="header5">Реквизиты и лицензии</h2>
+            <div class="uk-table-conteiner">
+                <table class="uk-table">
+                    <tr>
+                        <td>Полное наименование</td>
+                        <td>ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ «УПРАВЛЯЮЩАЯ КОМПАНИЯ «РЕКОРД КАПИТАЛ» (прежнее наименование - Общество с ограниченной ответственностью «Управляющая компания «Инвест Менеджмент Центр» до 03.06.2022 г.)</td>
+                    </tr>
+                    <tr>
+                        <td>Сокращенное наименование</td>
+                        <td>ООО «УК «РЕКОРД КАПИТАЛ» (прежнее наименование - ООО «УК «Инвест Менеджмент Центр» до 03.06.2022 г.)</td>
+                    </tr>
+                    <tr>
+                        <td>Юридический адрес</td>
+                        <td>630099, Россия, г. Новосибирск, ул. Чаплыгина, 47, пом. 2,3,4,5,6,7</td>
+                    </tr>
+                    <tr>
+                        <td>Почтовый адрес</td>
+                        <td>630099, Россия, г. Новосибирск, ул. Чаплыгина, 47, пом. 2,3,4,5,6,7</td>
+                    </tr>
+                    <tr>
+                        <td>Телефон/факс</td>
+                        <td>+7 (383) 207-54-23</td>
+                    </tr>
+                    <tr>
+                        <td>ИНН/КПП</td>
+                        <td>7718919844/ 540601001</td>
+                    </tr>
+                    <tr>
+                        <td>ОГРН</td>
+                        <td>1137746080768</td>
+                    </tr>
+                    <tr>
+                        <td>Расчётный счет</td>
+                        <td>40701810100000002667</td>
+                    </tr>
+                    <tr>
+                        <td>Корреспондентский счет</td>
+                        <td>30101810200000000823</td>
+                    </tr>
+                    <tr>
+                        <td>БИК банка</td>
+                        <td>044525823</td>
+                    </tr>
+                    <tr>
+                        <td>Банк</td>
+                        <td>ГПБ (АО) г. Москва»</td>
+                    </tr>
+                    <tr>
+                        <td>Классификаторы в статистическом регистре</td>
+                        <td>
+                            ОКПО 17133165;<br>
+                            ОКАТО 50401372000;<br>
+                            ОКТМО 50701000001;<br>
+                            ОКОГУ 4210014;<br>
+                            ОКФС 16;<br> 
+                            ОКОПФ 12300;<br>
+                            ОКВЭД 66.30.1 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Генеральный директор</td>
+                        <td>
+                            Сторчак Руслан Сергеевич<br>
+                            Действует на основании Устава
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>E-mail</td>
+                        <td>info@recordcap.ru</td>
+                    </tr>
+                    <tr>
+                        <td>Страница в телеграмм-канал</td>
+                        <td><a href="https://t.me/+rF0Ut3uzMR8wOGMy" target="_blank" rel="noopener">Перейти в телеграмм-канал</a></td>
+                    </tr>
+                    <tr>
+                        <td>Телефон</td>
+                        <td>+7 (383) 207-54-23</td>
+                    </tr>
+                    <tr>
+                        <td>Телефон «горячей» линии</td>
+                        <td>8-800-707-04-78</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="lic-conteiner">
+                <img class="lic" src="/static/img/lic1.jpg">
+                <img class="lic" src="/static/img/lic2.jpg">
+                <div>Лицензия, предоставленная Банком России за №21-000-1-00955 от «14» мая 2013 года.</div>
+                
+                <img class="svid" src="/static/img/svid-naufor.jpg">
+                <div>Свидетельство о членстве в СРО НАУФОР</div>
+
+                <img class="trademark" src="/static/img/904758.jpg">
+                <div>Свидетельство на товарный знак № 904758</div>
+
+                <img class="trademark" src="/static/img/911576.jpg">
+                <div>Свидетельство на товарный знак № 911576</div>
+    
+                <img class="trademark" src="/static/img/1127096.jpg">
+                <div>Свидетельство на товарный знак № 1127096</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Раздел "Документы" -->
+    <div id="documents-section" class="document-section">
+        {% if documents %}
+            <div class="documents-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <a href="{{ url_for('download_report_document', filename=doc.url.split('/')[-1]) }}" download class="document-link all-link">
+                        <div class="document-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                    </a>
+                    <div class="document-info">
+                        <a href="{{ doc.url }}" target="_blank" class="all-link">
+                            <div class="document-name">{{ doc.name }}</div>
+                        </a>
+                        <div class="document-meta">
+                            Загружен: {{ doc.upload_date.strftime('%d.%m.%Y') }}
+                            {% if doc.expiration_date %}
+                            <br>Действует до: {{ doc.expiration_date.strftime('%d.%m.%Y') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'documents') {
+            document.querySelector('[data-target="documents-section"]').classList.add('active');
+            document.querySelector('[data-target="about-section"]').classList.remove('active');
+            
+            document.getElementById('documents-section').classList.add('active');
+            document.getElementById('about-section').classList.remove('active');
+        }
+
+        document.querySelectorAll('.uk-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.uk-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.document-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

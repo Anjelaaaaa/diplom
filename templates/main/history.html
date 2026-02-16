@@ -1,0 +1,845 @@
+{% extends "base.html" %}
+
+{% block title %}История компании{% endblock %}
+
+{% block style %}
+<style>
+:root {
+    --primary-blue: #000f9f;
+    --primary-blue-light: rgba(0, 15, 159, 0.1);
+    --primary-blue-dark: #000c7a;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
+}
+
+body {
+    margin-top: 100px;
+    background: var(--background);
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Основной контейнер истории */
+.history-main-container {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 30px;
+}
+
+/* Боковая панель навигации */
+.history-sidebar {
+    width: 100px;
+    flex-shrink: 0;
+    margin: 10px 0 30px 0;
+    position: relative;
+}
+
+.years-navigation {
+    position: sticky;
+    top: 140px;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+}
+
+.year-nav-item {
+    position: relative;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.year-nav-item:last-child {
+    margin-bottom: 0;
+}
+
+.year-button {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: var(--background);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-light);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.year-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.year-button:hover {
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    transform: translateX(5px);
+    box-shadow: var(--shadow-md);
+}
+
+.year-button:hover::before {
+    opacity: 0.05;
+}
+
+.year-button.active {
+    color: white;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+    border-color: var(--primary-blue);
+    box-shadow: 0 6px 20px rgba(0, 15, 159, 0.15);
+    transform: translateX(8px);
+}
+
+.year-button.active::before {
+    opacity: 0;
+}
+
+/* Индикатор - ПУЛЬСИРУЮЩАЯ ТОЧКА */
+.year-indicator {
+    width: 12px;
+    height: 12px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 0 0 0 rgba(0, 15, 159, 0);
+}
+
+.year-nav-item.active .year-indicator {
+    opacity: 1;
+    animation: pulse 2s infinite;
+}
+
+/* Стиль для активного года - ИНДИКАТОР СЛЕВА + БОКОВАЯ ЛИНИЯ */
+.year-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 70%;
+    background: linear-gradient(to bottom, 
+        transparent 0%, 
+        var(--primary-blue) 20%, 
+        var(--primary-blue) 80%, 
+        transparent 100%);
+    border-radius: 1px;
+}
+
+/* Контентная область */
+.history-content {
+    flex-grow: 1;
+    position: relative;
+}
+
+/* Шапка страницы */
+.page-header {
+    margin-bottom: 3rem;
+    padding-top: 2rem;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 2px;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-top: 1.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
+
+/* Верхний блок - продолжение истории */
+.continuation-block {
+    margin-bottom: 4rem;
+    position: relative;
+    padding-left: 2.5rem;
+    animation: fadeInUp 0.8s ease;
+}
+
+.continuation-block::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 16px;
+    height: 16px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 0 4px rgba(0, 15, 159, 0.1);
+    animation: pulse 2s infinite;
+}
+
+.continuation-block::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 2rem;
+    bottom: -4rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-blue) 0%, var(--border) 100%);
+}
+
+.continuation-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.continuation-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.continuation-text {
+    font-size: 15px;
+    color: var(--text-light);
+    line-height: 1.6;
+    max-width: 90%;
+}
+
+/* События (правая колонка) */
+.events-column {
+    position: relative;
+}
+
+.event-item {
+    margin-bottom: 3rem;
+    position: relative;
+    padding-left: 2.5rem;
+    opacity: 0.6;
+    transition: all 0.4s ease;
+}
+
+.event-item.active {
+    opacity: 1;
+}
+
+/* Точка события */
+.event-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 16px;
+    height: 16px;
+    background: var(--border);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 0 0 0 rgba(0, 15, 159, 0);
+}
+
+/* Линия между событиями */
+.event-item::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 2rem;
+    bottom: -3rem;
+    width: 2px;
+    background: var(--border);
+    transition: all 0.3s ease;
+}
+
+.event-item:last-child::after {
+    display: none;
+}
+
+/* Активное событие */
+.event-item.active::before {
+    background: var(--primary-blue);
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(0, 15, 159, 0.1);
+    animation: pulse 2s infinite;
+}
+
+.event-item.active::after {
+    background: linear-gradient(to bottom, var(--primary-blue) 0%, var(--border) 100%);
+}
+
+.event-date {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.event-item.active .event-date {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.event-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    transition: all 0.3s ease;
+}
+
+.event-item.active .event-title {
+    color: var(--primary-blue);
+}
+
+.event-description {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.6;
+    max-width: 90%;
+}
+
+/* Блок роста активов */
+.growth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-blue);
+    background: var(--primary-blue-light);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(0, 15, 159, 0.15);
+    animation: slideIn 0.5s ease;
+}
+
+.growth-badge::before {
+    content: '↑';
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Анимации */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 15, 159, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(0, 15, 159, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 15, 159, 0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 1000px) {
+    .history-main-container {
+        flex-direction: column;
+    }
+    
+    .history-sidebar {
+        width: 100%;
+        margin: 10px 0 0 0;
+    }
+    
+    .years-navigation {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0; /* УБИРАЕМ ВНУТРЕННИЙ ОТСТУП */
+        justify-content: center; /* Центрируем кнопки */
+    }
+    
+    .year-nav-item {
+        margin-bottom: 0;
+        flex: 0 0 auto; /* Убираем гибкое растяжение */
+        min-width: unset; /* Убираем минимальную ширину */
+    }
+    
+    .year-button {
+        padding: 0.75rem 1rem; /* Нормальные отступы */
+        font-size: 14px;
+        width: auto; /* Автоматическая ширина */
+        min-width: 80px; /* Минимальная ширина для читаемости */
+    }
+    
+    .year-indicator,
+    .year-nav-item.active::before {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        margin-top: 120px;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .continuation-block {
+        padding-left: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .event-item {
+        padding-left: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .event-item::before {
+        left: 0; /* Исправляем позицию точки */
+    }
+    
+    .event-item::after {
+        left: 7px; /* Возвращаем нормальную позицию */
+    }
+    
+    .continuation-block::before {
+        left: 0;
+    }
+    
+    .continuation-block::after {
+        left: 7px;
+    }
+    
+    /* Исправляем отступ для years-navigation в мобильном виде */
+    .years-navigation {
+        padding: 0; /* Убираем все отступы */
+        margin: 0; /* Убираем внешние отступы */
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 22px;
+    }
+    
+    .continuation-title {
+        font-size: 16px;
+    }
+    
+    .continuation-text {
+        font-size: 14px;
+    }
+    
+    .event-title {
+        font-size: 15px;
+    }
+    
+    .event-description {
+        font-size: 14px;
+    }
+    
+    .year-button {
+        font-size: 13px;
+        padding: 0.6rem 0.8rem; /* Нормальные отступы для мобильных */
+        min-width: 70px; /* Уменьшаем минимальную ширину */
+    }
+    
+    /* Еще больше уменьшаем отступы в самом маленьком разрешении */
+    .years-navigation {
+        gap: 0.5rem; /* Уменьшаем расстояние между кнопками */
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<nav class="breadcrumb" aria-label="Навигация по сайту">
+    <ol>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/about_company">О компании</a></li>
+        <li>История компании</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <!-- Заголовок страницы -->
+    <div class="page-header">
+        <h1 class="header5">История компании</h1>
+        <p class="description">Хронология ключевых событий и достижений с момента основания до сегодняшнего дня</p>
+    </div>
+
+    <!-- Основной контейнер истории -->
+    <div class="history-main-container">
+        <!-- Боковая панель навигации - КРУГЛЫЙ ДИЗАЙН -->
+        <div class="history-sidebar">
+            <div class="years-navigation">
+                <!-- ГОДА В ОБРАТНОМ ПОРЯДКЕ (от новых к старым) -->
+                <div class="year-nav-item active" data-year="current">
+                    <span class="year-indicator"></span>
+                    <button class="year-button active">Сейчас</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2023">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2023</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2022">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2022</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2021">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2021</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2020">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2020</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2019">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2019</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2018">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2018</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2016">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2016</button>
+                </div>
+                
+                <div class="year-nav-item" data-year="2013">
+                    <span class="year-indicator"></span>
+                    <button class="year-button">2013</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контентная область с событиями - В ОБРАТНОМ ПОРЯДКЕ -->
+        <div class="history-content">
+            <!-- Верхний блок - продолжение истории -->
+            <div class="continuation-block" data-year="current">
+                <div class="continuation-date">Сегодня</div>
+                <h3 class="continuation-title">История продолжается!</h3>
+                <p class="continuation-text">
+                    Мы не останавливаемся на достигнутом и продолжаем активно развиваться
+                </p>
+            </div>
+
+            <div class="events-column">
+                <!-- 2023 -->
+                <div class="event-item" data-year="2023">
+                    <div class="event-date">26 мая 2023</div>
+                    <h3 class="event-title">Вручение Благодарственного письма от Мэрии города Новосибирска за участие в конкурсе «Лучшее малое предприятие (предприниматель) года города Новосибирска»</h3>
+                </div>
+
+                <!-- 2022 -->
+                <div class="event-item" data-year="2022">
+                    <div class="event-date">4 августа 2022</div>
+                    <h3 class="event-title">Вручение Благодарности от НАУФОР за вклад в развитие фондового рынка Урала и Сибири сотрудникам компании</h3>
+                </div>
+
+                <div class="event-item" data-year="2022">
+                    <div class="event-date">1 августа 2022</div>
+                    <h3 class="event-title">Смена адреса ООО «УК «РЕКОРД КАПИТАЛ» с г. Новосибирск ул. Дуси Ковальчук, 260/2 на г. Новосибирск ул. Чаплыгина, 47, пом. 2-7</h3>
+                </div>
+
+                <div class="event-item" data-year="2022">
+                    <div class="event-date">3 июня 2022</div>
+                    <h3 class="event-title">ООО «УК «Инвест Менеджмент Центр» провела ребрендинг - новое наименование компании ООО «УК «РЕКОРД КАПИТАЛ»</h3>
+                </div>
+
+                <!-- 2021 -->
+                <div class="event-item" data-year="2021">
+                    <div class="event-date">16 июня 2021</div>
+                    <h3 class="event-title">УК «Инвест Менеджмент Центр» стала победителем по итогам 2020 года в конкурсе «Элита фондового рынка», региональный этап Урал и Сибирь, сразу у в трех номинациях – «Управляющая компания года», «Прорыв года (Rising Star), а также отдельной наградой был отмечен Генеральный директор Сторчак Руслан Сергеевич «За личный вклад в развитие фондового рынка Урала и Сибири»</h3>
+                </div>
+
+                <div class="event-item" data-year="2021">
+                    <div class="event-date">19 февраля 2021</div>
+                    <h3 class="event-title">Открытие обособленного подразделения «ПЕТРОГРАДСКИЙ» в г. Санкт-Петербург</h3>
+                </div>
+
+                <div class="event-item" data-year="2021">
+                    <div class="event-date">4 февраля 2021</div>
+                    <h3 class="event-title">Включение в члены Комитета по управлению ЗПИФ при НАУФОР Сторчака Руслана Сергеевича</h3>
+                </div>
+
+                <div class="event-item" data-year="2021">
+                    <div class="event-date">1 января 2021</div>
+                    <h3 class="event-title">Рост активов фондов под управлением компании по итогам 2020 года на 32%</h3>
+                    <div class="growth-badge">Рост активов +32%</div>
+                </div>
+
+                <!-- 2020 -->
+                <div class="event-item" data-year="2020">
+                    <div class="event-date">20 августа 2020</div>
+                    <h3 class="event-title">Получение награды Investfunds Awards в номинации «Лучший ПИФ акций» по ОПИФ рфи «Алёнка-Капитал» по итогам 2019 года</h3>
+                </div>
+
+                <div class="event-item" data-year="2020">
+                    <div class="event-date">1 января 2020</div>
+                    <h3 class="event-title">Рост активов фондов под управлением компании на 250% по итогам 2019 года</h3>
+                    <div class="growth-badge">Рост активов +250%</div>
+                </div>
+
+                <!-- 2019 -->
+                <div class="event-item" data-year="2019">
+                    <div class="event-date">25 мая 2019</div>
+                    <h3 class="event-title">Продление полномочий Генерального директора Сторчака Руслана Сергеевича</h3>
+                </div>
+
+                <div class="event-item" data-year="2019">
+                    <div class="event-date">1 января 2019</div>
+                    <h3 class="event-title">Рост активов фондов под управлением компании по итогам 2018 года на 48,5%</h3>
+                    <div class="growth-badge">Рост активов +48.5%</div>
+                </div>
+
+                <!-- 2018 -->
+                <div class="event-item" data-year="2018">
+                    <div class="event-date">1 января 2018</div>
+                    <h3 class="event-title">Рост активов фондов под управлением компании по итогам 2017 года на 50%</h3>
+                    <div class="growth-badge">Рост активов +50%</div>
+                </div>
+
+                <!-- 2016 -->
+                <div class="event-item" data-year="2016">
+                    <div class="event-date">6 июня 2016</div>
+                    <h3 class="event-title">Продление полномочий Генерального директора Сторчака Руслана Сергеевича</h3>
+                </div>
+
+                <!-- 2013 -->
+                <div class="event-item" data-year="2013">
+                    <div class="event-date">6 июня 2013</div>
+                    <h3 class="event-title">Избрание Генеральным директором Сторчака Руслана Сергеевича</h3>
+                </div>
+
+                <div class="event-item" data-year="2013">
+                    <div class="event-date">5 февраля 2013</div>
+                    <h3 class="event-title">Создание ООО «УК «Инвест Менеджмент Центр»</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventItems = document.querySelectorAll('.event-item');
+    const continuationBlock = document.querySelector('.continuation-block');
+    const yearNavItems = document.querySelectorAll('.year-nav-item');
+    const yearButtons = document.querySelectorAll('.year-button');
+    
+    // Инициализация состояний
+    eventItems.forEach(item => {
+        item.style.opacity = '0.6';
+        item.style.transform = 'translateY(10px)';
+        item.style.transition = 'all 0.4s ease';
+    });
+    
+    // Функция обновления активного года и событий
+    function updateActiveSections() {
+        const scrollTop = window.pageYOffset;
+        const windowHeight = window.innerHeight;
+        const triggerPosition = windowHeight * 0.3;
+        
+        let activeYear = 'current'; // Теперь по умолчанию "Сейчас"
+        let closestElement = continuationBlock;
+        let closestDistance = Math.abs(continuationBlock.getBoundingClientRect().top - triggerPosition);
+        
+        // Проверяем, находится ли пользователь в самом верху страницы
+        if (scrollTop < 50) {
+            activeYear = 'current';
+            closestElement = continuationBlock;
+        } else {
+            // Находим ближайший к центру экрана элемент (событие)
+            eventItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const distance = Math.abs(rect.top - triggerPosition);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestElement = item;
+                    activeYear = item.dataset.year;
+                }
+            });
+        }
+        
+        // Обновляем состояние блока "История продолжается"
+        continuationBlock.classList.remove('active');
+        if (activeYear === 'current') {
+            continuationBlock.classList.add('active');
+        }
+        
+        // Обновляем состояние всех событий
+        eventItems.forEach(item => {
+            const rect = item.getBoundingClientRect();
+            const isVisible = rect.top < windowHeight * 0.8 && rect.bottom > windowHeight * 0.2;
+            const distance = Math.abs(rect.top - triggerPosition);
+            
+            item.classList.remove('active');
+            
+            // Плавное появление/скрытие
+            if (isVisible) {
+                item.style.opacity = Math.max(0.6, 1 - (distance / windowHeight));
+                item.style.transform = `translateY(${Math.min(10, distance * 0.1)}px)`;
+            } else {
+                item.style.opacity = '0.4';
+                item.style.transform = 'translateY(20px)';
+            }
+            
+            // Активируем ближайшее
+            if (item === closestElement) {
+                item.classList.add('active');
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }
+        });
+        
+        // Обновляем активный год в навигации
+        yearNavItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.year === activeYear) {
+                item.classList.add('active');
+            }
+        });
+        
+        yearButtons.forEach(button => {
+            button.classList.remove('active');
+            if (button.parentElement.dataset.year === activeYear) {
+                button.classList.add('active');
+            }
+        });
+    }
+    
+    // Обработчики для клика по годам - ИСПРАВЛЕННАЯ ЛОГИКА
+    yearButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const yearItem = this.closest('.year-nav-item');
+            const year = yearItem.dataset.year;
+            
+            if (year === 'current') {
+                // Прокрутка к самому верху страницы
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            } else {
+                // Находим ВСЕ события указанного года
+                const yearEvents = document.querySelectorAll(`.event-item[data-year="${year}"]`);
+                if (yearEvents.length > 0) {
+                    // Берем ПЕРВОЕ (самое верхнее) событие этого года
+                    const firstEvent = yearEvents[0];
+                    
+                    // Плавная прокрутка к самому верхнему событию года
+                    const headerOffset = 120; // Учитываем фиксированный хедер
+                    const elementPosition = firstEvent.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Обработчик скролла
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        
+        scrollTimeout = setTimeout(() => {
+            updateActiveSections();
+        }, 10);
+    });
+    
+    // Инициализация
+    updateActiveSections();
+    
+    // Обновляем при изменении размера окна
+    window.addEventListener('resize', updateActiveSections);
+});
+</script>
+{% endblock %}

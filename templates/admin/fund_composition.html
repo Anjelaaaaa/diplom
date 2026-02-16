@@ -1,0 +1,272 @@
+{% extends "base_admin.html" %}
+
+{% block title %} Управление составом фонда {% endblock %}
+
+{% block style %} {% endblock %}
+
+{% block main %} 
+<div class="container"> 
+    <div class="nav">
+        {% for fund in short_names %}
+            <a class="{% if fund.url_name == current_fund.url_name %}active{% endif %}" 
+                href="{{ url_for('admin.fund_admin', fund_name=fund.url_name) }}">
+                {{ fund.short_name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="nav">
+        <a class="{% if request.path.endswith('/fund-values') %}active{% endif %}"
+            href="{{ url_for('admin.handle_fund_values', fund_name=current_fund.url_name) }}">
+            Значения стоимости пая, бенчмарка и СЧА
+        </a>
+        <a class="{% if request.path.endswith('/fund-composition') %}active{% endif %}"
+            href="{{ url_for('admin.handle_fund_composition', fund_name=current_fund.url_name) }}">
+            Состав фонда
+        </a>
+        <a class="{% if request.path.endswith('/documents') %}active{% endif %}"
+            href="{{ url_for('admin.handle_documents', fund_name=current_fund.url_name) }}">
+            Документы
+        </a>
+    </div>
+        
+    <!-- Форма для загрузки состава фонда -->
+    <div class="card mb-4">
+        <div class="card-header">Загрузить состав фонда (Excel)</div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Дата состава</label>
+                    <input type="date" name="composition_date" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Excel файл</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="document_file" name="excel_file" class="form-control-file" accept=".xlsx,.xls">
+                        <button type="button" class="file-input-button">
+                            Выберите файл
+                        </button>
+                        <span class="file-name">Файл не выбран</span>
+                    </div>
+                    <div>
+                        <small class="form-text text-muted">
+                            Файл должен содержать колонки: Эмитент, Сектор, Сумма, Доля
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Тип диаграммы</label>
+                    <select name="chart_type" class="form-control">
+                        <option value="pie">Круговая диаграмма</option>
+                        <option value="column">Гистограмма</option>
+                    </select>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger mt-3">{{ error }}</div>
+                {% endif %}
+                {% if success %}
+                    <div class="alert alert-success mb-4">{{ success }}</div>
+                {% endif %}
+                <button type="submit" name="preview" class="btn btn-primary">Предпросмотр</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Блок предпросмотра -->
+    {% if preview_data %}
+    <div class="card mb-4">
+        <div class="card-header">Предпросмотр данных за {{ preview_date }}</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            {% if preview_data|selectattr('Эмитент')|list|length > 0 %}
+                            <th>Эмитент</th>
+                            {% endif %}
+                            <th>Сектор</th>
+                            <th>Сумма</th>
+                            <th>Доля</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_data %}
+                        <tr>
+                            {% if row['Эмитент'] %}
+                            <td>{{ row['Эмитент'] }}</td>
+                            {% endif %}
+                            <td>{{ row['Сектор'] }}</td>
+                            <td>{{ "{:,.2f}".format(row['Сумма']).replace(",", " ") }}</td>
+                            <td>{{ "{:.2%}".format(row['Доля']) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <form method="POST">
+                <button type="submit" name="publish" class="btn btn-success">Опубликовать</button>
+                <a href="/admin/funds/alenka/fund-composition" class="btn btn-secondary">Отменить</a>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Форма для удаления данных состава фонда -->
+    <div class="card mb-4">
+        <div class="card-header">Удалить данные состава фонда по дате</div>
+        <div class="card-body">
+            <form method="POST" id="deleteForm" onsubmit="return validateDeleteForm()">
+                <div class="form-group">
+                    <label>Дата для удаления</label>
+                    <select name="delete_date_select" id="delete_date_select" class="form-control mb-2" onchange="handleDateChange()">
+                        <option value="">-- Выберите дату --</option>
+                        {% for date in composition_dates %}
+                            <option value="{{ date.strftime('%Y-%m-%d') }}">
+                                {{ date.strftime('%d.%m.%Y') }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Или введите дату вручную:</small>
+                    <input type="date" name="delete_date_input" id="delete_date_input" class="form-control" onchange="handleDateChange()">
+                    <small class="form-text text-muted">
+                        Будет удалена информация о составе фонда за выбранную дату
+                    </small>
+                    
+                    <!-- Сообщение об ошибке "Дата не выбрана" -->
+                    <div id="dateError" class="alert alert-danger mt-2" style="display: none;">
+                        Пожалуйста, выберите или введите дату
+                    </div>
+                    
+                    <!-- Сообщение об ошибке "Нет данных" -->
+                    <div id="noDataError" class="alert alert-danger mt-2" style="display: none;">
+                        Нет данных состава фонда на выбранную дату
+                    </div>
+                </div>
+                {% if error_delete %}
+                    <div class="alert alert-danger mt-3">{{ error_delete }}</div>
+                {% endif %}
+                {% if success_delete %}
+                    <div id="dataSuccess" class="alert alert-success mb-4">{{ success_delete }}</div>
+                {% endif %}
+                <button type="submit" name="delete_action" class="btn btn-danger">Удалить состав фонда</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица с составом фонда -->
+    {% if composition_data %}
+    <div class="card">
+        <div class="card-header">Состав фонда</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="document_type_filter">Фильтр по дате:</label>
+                <select name="composition_date" class="form-control" id="compositionDateSelect">
+                    {% for date in composition_dates %}
+                        <option value="{{ date.strftime('%Y-%m-%d') }}" 
+                                {% if date.strftime('%Y-%m-%d') == selected_date %}selected{% endif %}>
+                            {{ date.strftime('%d.%m.%Y') }}
+                        </option>
+                    {% endfor %} 
+                </select>
+            </div>
+            
+            <div id="compositionTableContainer">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="thead-light">
+                            <tr>
+                                {% if composition_data|selectattr('issuer')|list|length > 0 %}
+                                <th>Эмитент</th>
+                                {% endif %}
+                                <th>Сектор</th>
+                                <th>Сумма</th>
+                                <th>Доля</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in composition_data %}
+                            <tr>
+                                {% if item.issuer %}
+                                <td>{{ item.issuer }}</td>
+                                {% endif %}
+                                <td>{{ item.sector }}</td>
+                                <td>{{ "{:,.2f}".format(item.amount).replace(",", " ") }}</td>
+                                <td>{{ "{:.2%}".format(item.share) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>      
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    // Список доступных дат из сервера
+    const availableDates = [
+        {% for date in composition_dates %}
+            "{{ date.strftime('%Y-%m-%d') }}",
+        {% endfor %}
+    ];
+
+    // Обработчик изменения даты
+    function handleDateChange() {
+        const select = document.getElementById('delete_date_select');
+        const input = document.getElementById('delete_date_input');
+        const dateError = document.getElementById('dateError');
+        const noDataError = document.getElementById('noDataError');
+        
+        // Скрываем ошибку "Дата не выбрана", если что-то выбрано
+        if (select.value || input.value) {
+            dateError.style.display = 'none';
+        }
+        
+        // Проверяем наличие данных для выбранной даты
+        const selectedDate = select.value || input.value;
+        if (selectedDate) {
+            noDataError.style.display = availableDates.includes(selectedDate) ? 'none' : 'block';
+        } else {
+            noDataError.style.display = 'none';
+        }
+    }
+
+    // Валидация при отправке формы
+    function validateDeleteForm() {
+        const select = document.getElementById('delete_date_select');
+        const input = document.getElementById('delete_date_input');
+        const dateError = document.getElementById('dateError');
+        
+        // Проверка на пустую дату
+        if (!select.value && !input.value) {
+            dateError.style.display = 'block';
+            return false;
+        }
+        
+        return true;
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateSelect = document.getElementById('compositionDateSelect');
+        const filterForm = document.getElementById('compositionFilterForm');
+        
+        dateSelect.addEventListener('change', function() {
+            // Добавляем параметр в URL без перезагрузки страницы
+            const selectedDate = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('composition_date', selectedDate);
+            window.location.href = url.toString();
+            
+            // Или альтернативный вариант с AJAX:
+            // filterForm.submit();
+        });
+    });
+</script>
+{% endblock %}

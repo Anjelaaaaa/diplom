@@ -1,0 +1,150 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Редактирование документа - {{ fund.name }}{% endblock %}
+
+{% block main %}
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumb">
+        <ol>
+            <li><a href="{{ url_for('admin.handle_documents', fund_name=fund_name) }}">Документы фонда</a></li>
+            <li>Редактирование документа</li>
+        </ol>
+    </nav>
+
+    <!-- Форма редактирования -->
+    <div class="card">
+        <div class="card-header">Редактирование документа</div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="document_name">Название документа*</label>
+                        <input type="text" id="document_name" name="document_name" class="form-control" 
+                            value="{{ document.name }}" required>
+                        <div class="invalid-feedback">Пожалуйста, укажите название документа</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="document_type">Тип документа*</label>
+                        <select id="document_type" name="document_type" class="form-control" required>
+                            <option value="">-- Выберите тип --</option>
+                            {% for doc_type in document_types %}
+                                <option value="{{ doc_type }}" {% if doc_type == document.document_type %}selected{% endif %}>
+                                    {{ doc_type }}
+                                </option>
+                            {% endfor %}
+                            <option value="other" {% if document.document_type not in document_types %}selected{% endif %}>
+                                Другое (указать ниже)
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">Пожалуйста, выберите тип документа</div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="new_type_group" style="{% if document.document_type not in document_types %}display: block;{% else %}display: none;{% endif %}">
+                    <label for="new_document_type">Укажите новый тип документа*</label>
+                    <input type="text" id="new_document_type" name="new_document_type" class="form-control" 
+                        value="{% if document.document_type not in document_types %}{{ document.document_type }}{% endif %}">
+                    <div class="invalid-feedback">Пожалуйста, укажите новый тип документа</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="expiration_date">Дата окончания доступа (необязательно)</label>
+                    <input type="date" id="expiration_date" name="expiration_date" class="form-control"
+                        value="{% if document.expiration_date %}{{ document.expiration_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    {% if document.url %}
+                    <label>Текущий PDF файл</label>
+                    <div class="current-file mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="document-header">
+                                <a href="{{ document.url }}" download class="document-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                <div>
+                                    <a href="{{ document.url }}" target="_blank" class="all-link">
+                                        <div class="document-name">{{ document.name }}</div>
+                                    </a>
+                                    <div class="document-meta">
+                                        Загружен: {{ document.upload_date.strftime('%d.%m.%Y %H:%M') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input type="checkbox" id="remove_file" name="remove_file" class="form-check-input">
+                        <label for="remove_file" class="form-check-label">Удалить текущий файл</label>
+                    </div>
+                    {% endif %}
+
+                    <label for="document_file">Загрузить новый PDF-файл</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="document_file" name="document_file" 
+                            class="form-control-file" accept=".pdf">
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                    </div>
+                </div>
+
+                <!-- Flash сообщения -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages mt-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary px-4">Сохранить</button>
+                    <a href="{{ url_for('admin.handle_documents', fund_name=fund_name) }}" class="btn btn-secondary ml-2">Отмена</a>
+                    <button type="submit" formaction="{{ url_for('admin.delete_fund_document', fund_name=fund_name, document_id=document.id) }}" 
+                            class="btn btn-danger float-right"
+                            onclick="return confirm('Вы уверены, что хотите удалить этот документ?')">
+                        Удалить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение между выбором типа и вводом нового
+    const documentType = document.getElementById('document_type');
+    const newTypeGroup = document.getElementById('new_type_group');
+    const newDocumentType = document.getElementById('new_document_type');
+
+    documentType.addEventListener('change', function() {
+        if (this.value === 'other') {
+            newTypeGroup.style.display = 'block';
+            newDocumentType.setAttribute('required', 'required');
+        } else {
+            newTypeGroup.style.display = 'none';
+            newDocumentType.removeAttribute('required');
+        }
+    });
+
+    // Обработка выбора файла
+    const fileInput = document.getElementById('document_file');
+    const fileName = document.querySelector('.file-name');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            fileName.textContent = this.files[0] ? this.files[0].name : 'Файл не выбран';
+        });
+    }
+});
+</script>
+{% endblock %}

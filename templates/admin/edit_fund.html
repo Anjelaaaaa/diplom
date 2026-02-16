@@ -1,0 +1,532 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Редактирование фонда - {{ fund.name }}{% endblock %}
+
+{% block style %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: var(--white);
+        box-sizing: border-box;
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    
+    textarea {
+        height: 100px;
+        resize: vertical;
+    }
+    
+    .file-info {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        display: inline;
+    }
+    
+    .admin_bottom {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .back-btn {
+        color: #000f9f;
+        text-decoration: none;
+        margin-right: 20px;
+        padding: 10px 16px;
+        border: 1px solid #000f9f;
+        border-radius: 0.5rem;
+    }
+    
+    .back-btn:hover {
+        background-color: rgba(0, 15, 159, 0.05);
+    }
+    
+    .submit-btn {
+        background: #000f9f;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-btn:hover {
+        box-shadow: 0 4px 16px rgba(0, 15, 159, 0.2);
+        background: #000d80;
+    }
+    
+    .image-preview {
+        margin-top: 10px;
+        max-width: 200px;
+        max-height: 200px;
+        border: 1px dashed #d4d4d4;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+    }
+    
+    .current-image {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        background: #f8f9fa;
+    }
+    
+    .current-image img {
+        max-width: 100%;
+        max-height: 150px;
+        object-fit: contain;
+    }
+    
+    /* Валидация */
+    .invalid-feedback {
+        display: none;
+        color: var(--error);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .was-validated input:invalid + .invalid-feedback,
+    .was-validated input:invalid ~ .invalid-feedback,
+    .was-validated textarea:invalid + .invalid-feedback,
+    .was-validated select:invalid + .invalid-feedback {
+        display: block;
+    }
+    
+    .was-validated input:invalid,
+    .was-validated textarea:invalid,
+    .was-validated select:invalid {
+        border-color: var(--error);
+    }
+    
+    .alert-margin {
+        margin-top: 20px;
+    }
+    
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .current-file-info {
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+    
+    .no-file-info {
+        font-size: 0.875rem;
+        color: #dc3545;
+        margin-top: 5px;
+    }
+    {% if fund.background_image %}
+    body {
+        background-image: url("data:{{ fund.background_mimetype }};base64,{{ fund.background_image | b64encode }}");
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: top center;
+    }
+    {% endif %}
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">Редактирование фонда: {{ fund.short_name }}</div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Основные поля формы -->
+                <div class="form-group">
+                    <label for="name">Полное название:</label>
+                    <input type="text" name="name" id="name" value="{{ fund.name }}" required 
+                        oninput="checkFundName()">
+                    <div class="invalid-feedback">Пожалуйста, укажите полное название фонда.</div>
+                    <div id="nameError" class="alert alert-danger alert-margin" style="display: none;">
+                        Фонд с таким названием уже существует
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="short_name">Короткое название:</label>
+                    <input type="text" name="short_name" id="short_name" value="{{ fund.short_name }}" required>
+                    <div class="invalid-feedback">Пожалуйста, укажите короткое название фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="url_name">URL название:</label>
+                    <input type="text" name="url_name" id="url_name" value="{{ fund.url_name }}" required 
+                        oninput="checkFundUrl()">
+                    <div class="invalid-feedback">Пожалуйста, укажите URL название фонда.</div>
+                    <div id="urlError" class="alert alert-danger alert-margin" style="display: none;">
+                        Фонд с таким URL названием уже существует
+                    </div>
+                </div>
+
+                <!-- Фоновое изображение -->
+                <div class="form-group">
+                    <label for="background_image">Фоновое изображение:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="background_image" name="background_image" 
+                            class="form-control-file" accept="image/*">
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                    </div>
+                    <div class="file-info">Рекомендуемый размер: 1920x350px</div>
+                    
+                    {% if fund.background_image %}
+                    <div class="current-image">
+                        <p class="current-file-info">Текущее фоновое изображение:</p>
+                        <img src="data:{{ fund.background_mimetype }};base64,{{ fund.background_image | b64encode }}" 
+                             alt="Текущее фоновое изображение">
+                    </div>
+                    {% else %}
+                    <div class="no-file-info">Фоновое изображение не загружено</div>
+                    {% endif %}
+                    
+                    <div class="image-preview" id="background_preview" style="display: none;">
+                        <img src="" alt="Предпросмотр фона">
+                    </div>
+                </div>
+
+                <!-- Логотип -->
+                <div class="form-group">
+                    <label for="logo">Логотип:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="logo" name="logo" 
+                            class="form-control-file" accept="image/*">
+                        <button type="button" class="file-input-button">Выберите файл</button>
+                        <span class="file-name">Файл не выбран</span>
+                    </div>
+                    <div class="file-info">Рекомендуемый размер: 300x300px</div>
+                    
+                    {% if fund.logo %}
+                    <div class="current-image">
+                        <p class="current-file-info">Текущий логотип:</p>
+                        <img src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo | b64encode }}" 
+                             alt="Текущий логотип">
+                    </div>
+                    {% else %}
+                    <div class="no-file-info">Логотип не загружен</div>
+                    {% endif %}
+                    
+                    <div class="image-preview" id="logo_preview" style="display: none;">
+                        <img src="" alt="Предпросмотр логотипа">
+                    </div>
+                </div>
+                   
+                <div class="form-group">
+                    <label for="description">Описание:</label>
+                    <textarea name="description" id="description" required>{{ fund.description }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="strategy">Стратегия:</label>
+                    <textarea name="strategy" id="strategy" required>{{ fund.strategy }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, опишите стратегию фонда.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additional_info">Дополнительная информация:</label>
+                    <textarea name="additional_info" id="additional_info">{{ fund.additional_info or '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_description">Описание для карточки:</label>
+                    <input type="text" name="cards_description" id="cards_description" value="{{ fund.cards_description }}" required>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание для карточки.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="footer_description">Описание для футера:</label>
+                    <textarea name="footer_description" id="footer_description" required>{{ fund.footer_description }}</textarea>
+                    <div class="invalid-feedback">Пожалуйста, добавьте описание для футера.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_amount">Рекомендуемая сумма:</label>
+                    <input type="number" name="cards_amount" id="cards_amount" value="{{ fund.cards_amount }}" required min="1">
+                    <div class="invalid-feedback">Пожалуйста, укажите рекомендуемую сумму (не менее 1).</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cards_period">Рекомендуемый период (лет):</label>
+                    <input type="number" name="cards_period" id="cards_period" value="{{ fund.cards_period }}" required min="1">
+                    <div class="invalid-feedback">Пожалуйста, укажите рекомендуемый период (не менее 1 года).</div>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="cards_animation" id="cards_animation" {{ 'checked' if fund.cards_animation }}>
+                    <label for="cards_animation" style="display: inline;">Показывать анимацию</label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="for_qualified_investors" id="for_qualified_investors" {{ 'checked' if fund.for_qualified_investors }}>
+                    <label for="for_qualified_investors" style="display: inline;">Только для квалифицированных инвесторов</label>
+                </div>
+                
+                <div class="admin_bottom">
+                    <a href="{{ url_for('admin.funds_admin') }}" class="back-btn">← Назад</a>
+                    <button type="submit" class="submit-btn">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    
+    // Валидация формы
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+    
+    // Обработка выбора файлов и предпросмотр
+    function setupFileInput(fileInputId, previewId, fileNameSpan) {
+        const fileInput = document.getElementById(fileInputId);
+        const preview = document.getElementById(previewId);
+        const fileName = document.querySelector(fileNameSpan);
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                
+                // Предпросмотр изображения
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.querySelector('img').src = e.target.result;
+                        preview.style.display = 'block';
+                        
+                        // Если это фоновое изображение, устанавливаем его как фон
+                        if (fileInputId === 'background_image') {
+                            document.body.style.backgroundImage = `url(${e.target.result})`;
+                            document.body.style.backgroundSize = '100%';
+
+                            document.body.style.backgroundRepeat = "no-repeat";
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                fileName.textContent = 'Файл не выбран';
+                preview.style.display = 'none';
+                
+                // Убираем фон если удалили фоновое изображение
+                if (fileInputId === 'background_image') {
+                    document.body.style.backgroundImage = '';
+                }
+            }
+        });
+    }
+    
+    // Настройка обработчиков для обоих файловых инпутов
+    setupFileInput('background_image', 'background_preview', '#background_image ~ .file-name');
+    setupFileInput('logo', 'logo_preview', '#logo ~ .file-name');
+    
+    // Клик по кнопке выбора файла
+    document.querySelectorAll('.file-input-button').forEach(button => {
+        button.addEventListener('click', function() {
+            this.nextElementSibling.click();
+        });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    
+    // Валидация формы
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+    
+    // Обработка выбора файлов и предпросмотр
+    function setupFileInput(fileInputId, previewId, fileNameSpan) {
+        const fileInput = document.getElementById(fileInputId);
+        const preview = document.getElementById(previewId);
+        const fileName = document.querySelector(fileNameSpan);
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                
+                // Предпросмотр изображения
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.querySelector('img').src = e.target.result;
+                        preview.style.display = 'flex';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                fileName.textContent = 'Файл не выбран';
+                preview.style.display = 'none';
+            }
+        });
+    }
+    
+    // Настройка обработчиков для обоих файловых инпутов
+    setupFileInput('background_image', 'background_preview', '#background_image ~ .file-name');
+    setupFileInput('logo', 'logo_preview', '#logo ~ .file-name');
+    
+    // Клик по кнопке выбора файла
+    document.querySelectorAll('.file-input-button').forEach(button => {
+        button.addEventListener('click', function() {
+            this.nextElementSibling.click();
+        });
+    });
+});
+</script>
+<script>
+    // Получаем данные из сервера (исключая текущий фонд)
+    const existingNames = {{ existing_names | tojson }};
+    const existingUrls = {{ existing_urls | tojson }};
+    const currentFundName = "{{ fund.name }}";
+    const currentFundUrl = "{{ fund.url_name }}";
+
+    // Проверка названия фонда (исключая текущий)
+    function checkFundName() {
+        const nameInput = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        const name = nameInput.value.trim();
+        
+        if (name && name !== currentFundName && existingNames.includes(name)) {
+            nameError.style.display = 'block';
+            nameInput.classList.add('is-invalid');
+        } else {
+            nameError.style.display = 'none';
+            nameInput.classList.remove('is-invalid');
+        }
+    }
+
+    // Проверка URL названия фонда (исключая текущий)
+    function checkFundUrl() {
+        const urlInput = document.getElementById('url_name');
+        const urlError = document.getElementById('urlError');
+        const url = urlInput.value.trim();
+        
+        if (url && url !== currentFundUrl && existingUrls.includes(url)) {
+            urlError.style.display = 'block';
+            urlInput.classList.add('is-invalid');
+        } else {
+            urlError.style.display = 'none';
+            urlInput.classList.remove('is-invalid');
+        }
+    }
+
+    // Валидация при отправке формы
+    function validateFundForm() {
+        const nameInput = document.getElementById('name');
+        const urlInput = document.getElementById('url_name');
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+        
+        let isValid = true;
+        
+        // Проверка названия (исключая текущий)
+        if (name !== currentFundName && existingNames.includes(name)) {
+            document.getElementById('nameError').style.display = 'block';
+            nameInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Проверка URL (исключая текущий)
+        if (url !== currentFundUrl && existingUrls.includes(url)) {
+            document.getElementById('urlError').style.display = 'block';
+            urlInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
+    // Вешаем обработчики на инпуты
+    document.getElementById('name').addEventListener('input', checkFundName);
+    document.getElementById('url_name').addEventListener('input', checkFundUrl);
+    
+    // Вешаем валидацию на форму
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!validateFundForm()) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

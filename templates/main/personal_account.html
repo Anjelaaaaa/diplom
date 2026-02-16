@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Capital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="../static/main.css">
+    <style>
+        .animation {
+            margin: 200px auto;
+            width: 500px;
+            height: 500px; 
+            border-radius: 50%;
+            perspective: 800px;
+        }
+        .inner {
+            margin: auto;
+            text-align: center;
+            position: absolute;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%; 
+        }
+        .inner.one {
+            left: 0%;
+            top: 0%;
+            animation: rotate-one 2.5s linear infinite;
+            border-bottom: 5px solid #000f9f;
+        }
+        .inner.two {
+            right: 0%;
+            top: 0%;
+            animation: rotate-two 2.5s linear infinite;
+            border-right: 5px solid #000f9f;
+        }
+        .inner.three {
+            right: 0%;
+            bottom: 0%;
+            animation: rotate-three 2.5s linear infinite;
+            border-top: 5px solid #000f9f;
+        }
+        @keyframes rotate-one {
+            0% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg);
+            }
+        }
+        @keyframes rotate-two {
+            0% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg);
+            }
+        }
+        @keyframes rotate-three {
+            0% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg);
+            }
+        }
+        @keyframes rotate-one {
+            0% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg);
+            }
+        }
+        @keyframes rotate-two {
+            0% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg);
+            }
+        }
+        @keyframes rotate-three {
+            0% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animation">
+        <div class="inner one"></div>
+        <div class="inner two"></div>
+        <div class="inner three"></div>
+    </div>
+<body>
+</html>
