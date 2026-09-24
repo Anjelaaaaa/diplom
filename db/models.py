@@ -25,7 +25,7 @@ class funds(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     footer_description = db.Column(db.Text, nullable=False)
     for_qualified_investors = db.Column(db.Boolean, default=False, nullable=False)
-    # Relationships
+    # Внешние включи
     fund_values = db.relationship('fund_values', backref='fund', lazy=True)
     conditions = db.relationship('fund_conditions', backref='fund', lazy=True, order_by='fund_conditions.order')
     steps = db.relationship('fund_steps', backref='fund', lazy=True, order_by='fund_steps.order')

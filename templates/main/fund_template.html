@@ -93,6 +93,7 @@
         box-shadow: 0 2px 20px rgba(0, 0, 0, 0.075);
         line-height: 17px;
         width: 180px;
+        height: 205px;
     }
     .tooltip-icon:hover + .tooltip {
         display: block;
@@ -1050,12 +1051,12 @@
                         <tr>
                             <th class="row-label">Период (данные на {{ current_date }})</th>
                             {% if returns['день'] is not none or returns['неделя'] is not none or returns['месяц'] is not none or returns['6 месяцев'] is not none or returns['год'] is not none or returns['5 лет'] is not none %}
-                                {% if returns['день'] is not none %}<th>День (?)</th>{% endif %}
-                                {% if returns['неделя'] is not none %}<th>Неделя (?)</th>{% endif %}
-                                {% if returns['месяц'] is not none %}<th>Месяц (?)</th>{% endif %}
-                                {% if returns['6 месяцев'] is not none %}<th>6 мес. (?)</th>{% endif %}
-                                {% if returns['год'] is not none %}<th>Год (?)</th>{% endif %}
-                                {% if returns['5 лет'] is not none %}<th>5 лет (?)</th>{% endif %}
+                                {% if returns['день'] is not none %}<th>День</th>{% endif %}
+                                {% if returns['неделя'] is not none %}<th>Неделя</th>{% endif %}
+                                {% if returns['месяц'] is not none %}<th>Месяц</th>{% endif %}
+                                {% if returns['6 месяцев'] is not none %}<th>6 мес.</th>{% endif %}
+                                {% if returns['год'] is not none %}<th>Год</th>{% endif %}
+                                {% if returns['5 лет'] is not none %}<th>5 лет</th>{% endif %}
                             {% else %}
                                 <th colspan="6">Нет данных за выбранный период</th>
                             {% endif %}
@@ -1101,7 +1102,7 @@
         {% endif %}
 
         {% if composition_date %}
-            <div class="header3">Структура фонда и комменнтарии за {{ composition_date }}</div>
+            <div class="header3">Структура фонда и комментарии за {{ composition_date }}</div>
         {% else %}
             <div class="header3">Структура фонда</div>
         {% endif %}
@@ -1196,14 +1197,14 @@
 
     <script>
         (async () => {
-            // Используйте chartData из вашего шаблона
             var shareData = JSON.parse('{{ share_data | safe }}'); // Данные для пая
             var share_growth_data = JSON.parse('{{ share_growth_data | safe }}'); // Данные для бенчмарка
-            var benchmark_data = JSON.parse('{{ benchmark_data | safe }}'); // Данные для СЧА
-            var benchmark_growth_data = JSON.parse('{{ benchmark_growth_data | safe }}'); // Данные для СЧА
-            var schaData = JSON.parse('{{ scha_data | safe }}'); // Данные для СЧА
+            // Данные для СЧА
+            var benchmark_data = JSON.parse('{{ benchmark_data | safe }}'); 
+            var benchmark_growth_data = JSON.parse('{{ benchmark_growth_data | safe }}'); 
+            var schaData = JSON.parse('{{ scha_data | safe }}'); 
 
-            let globalShareData = shareData; // или присвоить после получения данных
+            let globalShareData = shareData;
             let currentMode = 'пай'; // по умолчанию
             
             // Получаем тип диаграммы из шаблона
@@ -1240,7 +1241,7 @@
 
                 // Функция для создания настроек в зависимости от типа диаграммы
                 function getChartSettings(type, centerText, data, colors) {
-                    // Базовые настройки (commonSettings) для всех диаграмм
+                    // Базовые настройки для всех диаграмм
                     const baseSettings = {
                         lang: {
                             contextButtonTitle: "",
@@ -1346,7 +1347,7 @@
                         return Highcharts.merge(baseSettings, {
                             chart: {
                                 type: 'column',
-                                spacingBottom: 30  // Добавьте эту строку
+                                spacingBottom: 30  
                             },
                             xAxis: {
                                 type: 'category',
@@ -1360,24 +1361,24 @@
                             },
                             yAxis: {
                                 title: {
-                                    text: 'Доля (%)'  // Изменено с "Сумма (руб.)" на "Доля (%)"
+                                    text: 'Доля (%)' 
                                 },
                                 labels: {
-                                    format: '{value}%',  // Добавлен знак процента
+                                    format: '{value}%',  
                                     style: {
                                         fontFamily: 'Montserrat'
                                     }
                                 }
                             },
                             tooltip: {
-                                pointFormat: '<b>{point.y:.0f}%</b>'  // Изменено на проценты с 2 знаками
+                                pointFormat: '<b>{point.y:.0f}%</b>'  
                             },
                             plotOptions: {
                                 column: {
                                     borderRadius: 5,
                                     dataLabels: {
                                         enabled: !isMobileView(),
-                                        format: '{point.y:.0f}%',  // Изменено на проценты
+                                        format: '{point.y:.0f}%',  
                                         style: {
                                             fontSize: '10px',
                                             fontWeight: 'normal',
@@ -1386,13 +1387,13 @@
                                     }
                                 }
                             },
-                            colors: generateTransparentColors('#000f9f', data.length),  // Используем те же цвета, что и для круговой
+                            colors: generateTransparentColors('#000f9f', data.length),  
                             series: [{
                                 name: 'Доля',
-                                colorByPoint: true,  // Включаем разные цвета для каждого столбца
+                                colorByPoint: true,  
                                 data: data.map(item => ({
                                     name: item.name,
-                                    y: item.y*100 // Теперь y - это доля в процентах (0.75 = 75%)
+                                    y: item.y*100 
                                 }))
                             }]
                         });
@@ -1427,7 +1428,7 @@
                     );
                 }
 
-                // Обработчик изменения размера окна (обновленный)
+                // Обработчик изменения размера окна
                 function handleResize() {
                     const width = window.innerWidth;
                     const isMidRange = width >= 1200 && width <= 1700;
@@ -1492,7 +1493,7 @@
                     });
                 }
 
-                // Инициализация и подписка на события
+                // Инициализация 
                 handleResize();
                 window.addEventListener('resize', handleResize);
             }
@@ -1612,7 +1613,6 @@
                                 const schaData = JSON.parse('{{ scha_data | safe }}').find(point => point[0] === this.x)[1];
                                 const shareGrowth = share_growth_data.find(point => point[0] === this.x)[1];
 
-                                // Используем текущий режим
                                 const label = currentMode === 'пай' ? 'Стоимость пая' : 'Стоимость чистых активов';
                                 const value = currentMode === 'пай' ? sharePrice : schaData;
 
@@ -1623,7 +1623,7 @@
                                     const formattedShareGrowth = shareGrowth >= 0 ? `+${shareGrowth.toFixed(2)}%` : `${shareGrowth.toFixed(2)}%`;
                                     tooltipStr += ` (<b>${formattedShareGrowth}</b>)</span><br/>`;
                                 } else {
-                                    tooltipStr += `</span><br/>`; // Закрываем тег, если роста нет
+                                    tooltipStr += `</span><br/>`; 
                                 }
                                 return tooltipStr;
                             }
@@ -1642,7 +1642,7 @@
                             valueDecimals: 2,
                             pointFormatter: function() {
                                 const benchmarkPrice = benchmark_data.find(point => point[0] === this.x)[1];
-                                const benchmarkGrowth = this.y; // Здесь хранится процент
+                                const benchmarkGrowth = this.y;
                                 const formattedBenchmarkGrowth = benchmarkGrowth >= 0 ? `+${benchmarkGrowth.toFixed(2)}%` : `${benchmarkGrowth.toFixed(2)}%`;
                                 return `<span style="color:${this.color}">Бенчмарк: <b>${benchmarkPrice} руб.</b> (<b>${formattedBenchmarkGrowth}</b>)</span><br/>`;
                             }
@@ -1693,7 +1693,6 @@
             // Инициализируем график на вкладке "Пай"
             createChart(shareData, benchmark_growth_data);
 
-            // В обработчиках вкладок
             document.getElementById('tab-pai').addEventListener('click', () => {
                 currentMode = 'пай';
                 createChart(shareData, benchmark_growth_data);
@@ -1710,11 +1709,9 @@
 
             // Функция для установки активной вкладки
             function setActiveTab(activeTabId) {
-                // Удаляем классы active со всех вкладок
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.classList.remove('active-graph');
                 });
-                // Устанавливаем active класс для текущей вкладки
                 document.getElementById(activeTabId).classList.add('active-graph');
             }
 
@@ -1841,7 +1838,7 @@
             }
             
             acceptBtn.addEventListener('click', function() {
-                // Сохраняем подтверждение в sessionStorage (очищается при закрытии вкладки)
+                // Сохраняем подтверждение в сессии (очищается при закрытии вкладки)
                 sessionStorage.setItem('qualified_confirmed_' + fundId, 'true');
                 modal.style.display = 'none';
                 // Возвращаем скролл

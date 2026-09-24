@@ -134,16 +134,9 @@
             <a href="funds/{{ fund.url_name }}" class="fund-link">
                 <div class="fund-item">
                     <div class="fund-info">
-                        {% if fund.logo %}
                         <div class="fund-logo">
                             <img src="data:{{ fund.logo_mimetype }};base64,{{ fund.logo|b64encode }}" alt="{{ fund.short_name }}">
                         </div>
-                        {% else %}
-                        <div class="fund-logo placeholder">
-                            {{ fund.short_name[0] | upper }}
-                        </div>
-                        {% endif %}
-                        
                         {{ fund.short_name }}
                     </div>
                     

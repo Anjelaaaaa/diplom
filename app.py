@@ -282,6 +282,20 @@ def fund_page(fund_url):
         last_share_price = fund_values_data[-1].share_price if fund_values_data[-1].share_price else None
         has_enough_data = len(fund_values_data) > 1
 
+        show_day = True   
+        show_week = True
+        
+        if len(fund_values_data) >= 3:
+            total_days = 0
+            for i in range(1, len(fund_values_data)):
+                delta = (fund_values_data[i].date - fund_values_data[i-1].date).days
+                total_days += delta
+            avg_interval = total_days / (len(fund_values_data) - 1)
+            
+            if avg_interval > 7:
+                show_day = False
+                show_week = False
+
         # Заполняем данные графиков
         for data_point in fund_values_data:
             dt = datetime.combine(data_point.date, datetime.min.time()).replace(tzinfo=timezone.utc)
@@ -305,32 +319,74 @@ def fund_page(fund_url):
                 benchmark_growth_data.append([timestamp, benchmark_growth])
 
         # Расчет доходностей
-        def calculate_return(period_days):
-            try:
-                end_date = fund_values_data[-1].date
-                start_date = end_date - timedelta(days=period_days)
-
-                start_price = None
-                for data_point in fund_values_data:
-                    if data_point.date >= start_date and data_point.share_price:
-                        start_price = float(data_point.share_price)
-                        break
-                
-                if start_price and start_price != 0:
-                    end_price = float(fund_values_data[-1].share_price) if fund_values_data[-1].share_price else 0
-                    return ((end_price / start_price) - 1) * 100
-                return None
-            except:
-                return None
-
         returns = {
-            'день': calculate_return(1),
-            'неделя': calculate_return(7),
-            'месяц': calculate_return(30),
-            '6 месяцев': calculate_return(180),
-            'год': calculate_return(365),
-            '5 лет': calculate_return(1825)
+            'день': None,
+            'неделя': None,
+            'месяц': None,
+            '6 месяцев': None,
+            'год': None,
+            '5 лет': None
         }
+        
+        if len(fund_values_data) >= 2:
+            last_price = float(fund_values_data[-1].share_price)
+            last_date = fund_values_data[-1].date
+            first_date = fund_values_data[0].date
+            
+            # Функция поиска ближайшей цены к целевой дате с проверкой максимального отклонения
+            def find_closest_price(target_date, max_allowed_days=None):
+                """Находит цену, максимально близкую к target_date.
+                   Если max_allowed_days указан, проверяет что отклонение не превышает его."""
+                closest_point = None
+                min_diff = None
+                
+                for data_point in fund_values_data:
+                    if data_point.date <= last_date and data_point.share_price:
+                        diff = abs((data_point.date - target_date).days)
+                        if min_diff is None or diff < min_diff:
+                            min_diff = diff
+                            closest_point = data_point
+                
+                if closest_point:
+                    if max_allowed_days is not None:
+                        actual_diff = abs((closest_point.date - target_date).days)
+                        if actual_diff > max_allowed_days:
+                            return None, None
+                    return float(closest_point.share_price), closest_point.date
+                return None, None
+            
+            if show_day and len(fund_values_data) >= 2:
+                prev_price = float(fund_values_data[-2].share_price)
+                returns['день'] = ((last_price / prev_price) - 1) * 100
+            
+            if show_week and len(fund_values_data) >= 2:
+                week_ago = last_date - timedelta(days=7)
+                start_price, actual_date = find_closest_price(week_ago, max_allowed_days=3)
+                if start_price and actual_date != last_date:
+                    returns['неделя'] = ((last_price / start_price) - 1) * 100
+            
+            month_ago = last_date - timedelta(days=30)
+            start_price, actual_date = find_closest_price(month_ago, max_allowed_days=7)
+            if start_price and actual_date != last_date:
+                returns['месяц'] = ((last_price / start_price) - 1) * 100
+            
+            if (last_date - first_date).days >= 150:
+                six_month_ago = last_date - timedelta(days=180)
+                start_price, actual_date = find_closest_price(six_month_ago, max_allowed_days=14)
+                if start_price and actual_date != last_date:
+                    returns['6 месяцев'] = ((last_price / start_price) - 1) * 100
+            
+            if (last_date - first_date).days >= 300:
+                year_ago = last_date - timedelta(days=365)
+                start_price, actual_date = find_closest_price(year_ago, max_allowed_days=30)
+                if start_price and actual_date != last_date:
+                    returns['год'] = ((last_price / start_price) - 1) * 100
+            
+            if (last_date - first_date).days >= 1500:
+                five_years_ago = last_date - timedelta(days=1825)
+                start_price, actual_date = find_closest_price(five_years_ago, max_allowed_days=60)
+                if start_price and actual_date != last_date:
+                    returns['5 лет'] = ((last_price / start_price) - 1) * 100
 
         # Подготовка данных для калькулятора
         date_options = [point.date for point in fund_values_data if point.share_price]
@@ -365,10 +421,10 @@ def fund_page(fund_url):
         sector_dict = {}
         
         for item in composition_data:
-            if item.issuer and item.share:  # Проверяем, что эмитент и доля не пустые
+            if item.issuer and item.share:  
                 issuer_dict[item.issuer] = issuer_dict.get(item.issuer, 0) + float(item.share)
                 has_issuer_data = True
-            if item.sector and item.share:  # Проверяем, что сектор и доля не пустые
+            if item.sector and item.share: 
                 sector_dict[item.sector] = sector_dict.get(item.sector, 0) + float(item.share)
                 has_sector_data = True
         
@@ -393,7 +449,7 @@ def fund_page(fund_url):
     # Получаем шаги инвестирования
     steps = fund.steps if fund.steps else []
     
-    # Получаем управляющего
+    # Получаем информацию об управляющем
     manager = fund.manager if fund.manager else None
 
     # Получаем изображения фонда
@@ -411,7 +467,7 @@ def fund_page(fund_url):
         chart_type = composition_data[0].chart_type if composition_data[0].chart_type else 'pie'
 
     return render_template(
-        'main/fund_template.html',  # Это будет универсальный шаблон
+        'main/fund_template.html',
         # Данные фонда
         fund=fund,
         background_image_b64=background_image_b64,
